@@ -1,0 +1,38 @@
+# Try this Makefile if you want to build the source outside of the PTXdist tree.
+# Your 'ptxproj' folder needs to be on the same level as this project for the
+# relative paths to work. The result may or may not run on the target - its sole
+# purpose until now has been to get bear (https://github.com/rizsotto/Bear) make
+# us a nice compilation database such that clangd properly recognizes our imports.
+
+#------------------------------------------------------------------------------
+# Compiler flags
+#------------------------------------------------------------------------------
+CFLAGS += -O0 -g3  -Wall
+#CFLAGS += -O2 -g   -Wsign-compare -Wfloat-equal -Wformat-security #-Werror
+
+#CFLAGS += -I$(SYSROOT)/usr/include/OsLinux/
+#CFLAGS += -I$(SYSROOT)/usr/include/dal/
+CFLAGS += -I../../ptxproj/platform-wago-pfcXXX/sysroot-target/usr/include/
+
+#------------------------------------------------------------------------------
+# Linker flags
+#------------------------------------------------------------------------------
+LDFLAGS += -Wl,-rpath-link=../../ptxproj/platform-wago-pfcXXX/root/usr/lib -L../../ptxproj/platform-wago-pfcXXX/sysroot-target/usr/lib
+LDFLAGS += -ldal -llibloader -lpthread -lffi -lrt -ldbus-glib-1 -lglib-2.0
+LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon
+
+
+all: powerreader
+
+powerreader: powerreader.o
+	/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc -o $@ $< $(LDFLAGS)
+
+powerreader.o: powerreader.c
+	/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc $(CFLAGS) -c $< -o $@
+
+clean:
+	-rm -f powerreader powerreader.o
+
+install:
+
+.PHONY: all install clean

@@ -1,0 +1,8 @@
+## SECTION=wago_specific_dal
+
+config WINNER_POWER_READER
+	bool
+	select DAL
+	prompt "WINNER Reloaded Power Reading Tool"
+	help
+	  Install the power reading tool of the WINNER Reloaded project

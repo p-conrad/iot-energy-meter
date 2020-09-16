@@ -1,0 +1,21 @@
+[
+    {
+        "arguments": [
+            "/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc",
+            "-c",
+            "-O0",
+            "-g3",
+            "-Wall",
+            "-I../../ptxproj/platform-wago-pfcXXX/sysroot-target/usr/include/",
+            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.5.0/include",
+            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.5.0/include-fixed",
+            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/arm-linux-gnueabihf/include",
+            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include",
+            "-o",
+            "powerreader.o",
+            "powerreader.c"
+        ],
+        "directory": "/home/peter/Studium/MS5/Masterarbeit/winner-power-reader/src",
+        "file": "powerreader.c"
+    }
+]
