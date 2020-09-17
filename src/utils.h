@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 /**
  * @brief Definition of possible error codes
  */
@@ -40,3 +42,19 @@ extern Loglevel loglevel;
         if (loglevel >= printlevel)                   \
             fprintf(stderr, format, ##__VA_ARGS__); \
 } while(0)
+
+/**
+ * @brief Reads a uint32 from a buffer at a given offset where bytes are in ascending order.
+ *
+ * @param[in] buf The buffer to read from
+ * @param[in] offset The offset in buf to read from
+ * @retval The uint32_t read from the buffer
+ */
+uint32_t read_uint32(uint8_t* buf, uint32_t offset) {
+	uint32_t result = 0;
+	result |= buf[offset + 3] << 24;
+	result |= buf[offset + 2] << 16;
+	result |= buf[offset + 1] << 8;
+	result |= buf[offset];
+	return result;
+}

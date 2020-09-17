@@ -93,6 +93,13 @@ int main(void) {
 		adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
 		adi->ReadEnd(kbusDeviceId, taskId);
 
+		// request A/C values of phase 1 (currently unsigned values only)
+		kbusOutputData[3] = 10; // Use the A/C values table
+		kbusOutputData[4] = 1;  // L1 power RMS
+		kbusOutputData[5] = 4;  // L1-N voltage RMS
+		kbusOutputData[6] = 34; // Max L1 power RMS
+		kbusOutputData[7] = 43; // Max L1-N voltage RMS
+
 		// write outputs
 		adi->WriteStart(kbusDeviceId, taskId);
 		adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData);
@@ -109,6 +116,10 @@ int main(void) {
                    (uint8_t)(structuredInputData->p3t495c1[2]),
                    (uint8_t)(structuredInputData->p3t495c1[3])
                   );
+			printf("\nProcess value 1: %u", read_uint32(structuredInputData->p3t495c1, 8));
+			printf("\nProcess value 2: %u", read_uint32(structuredInputData->p3t495c1, 12));
+			printf("\nProcess value 3: %u", read_uint32(structuredInputData->p3t495c1, 16));
+			printf("\nProcess value 4: %u", read_uint32(structuredInputData->p3t495c1, 20));
             printf("\nDigital inputs: %u %u", structuredInputData->p1t4XXc1, structuredInputData->p1t4XXc2);
             printf("\n");
         }
