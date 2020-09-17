@@ -16,8 +16,9 @@
 //-----------------------------------------------------------------------------
 // defines and test setup
 //-----------------------------------------------------------------------------
-#define KBUS_MAINPRIO 40       // main loop
+#define KBUS_MAINPRIO 40
 #define RUNTIME_SECONDS 30
+#define CYCLE_TIME_US 50000
 
 // TODO: This should be configurable by a script
 Loglevel loglevel = LOGLEVEL_DEBUG;
@@ -74,8 +75,9 @@ int main(void) {
 
     // run main loop for 30s
     int loops = 0;
+	struct timespec startTime, finishTime;
     while (runtime < RUNTIME_SECONDS) {
-        usleep(10000); // wait 10 ms
+		clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
 
         ErrorCode triggerResult = trigger_cycle(adi, kbusDeviceId);
         if (triggerResult != ERROR_SUCCESS) {
@@ -87,28 +89,23 @@ int main(void) {
 
         // 1s tick for test output
         new_t = time(NULL);
+
+		// read inputs
+		adi->ReadStart(kbusDeviceId, taskId);     /* lock PD-In data */
+		adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
+		adi->ReadEnd(kbusDeviceId, taskId); /* unlock PD-In data */
+
+		// write outputs
+		adi->WriteStart(kbusDeviceId, taskId); /* lock PD-out data */
+		adi->WriteBytes(kbusDeviceId,taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
+		adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
+		adi->WriteEnd(kbusDeviceId, taskId); /* unlock PD-out data */
+
         if (new_t != last_t) {
             last_t = new_t;
             runtime++;
-
-            // read inputs
-            adi->ReadStart(kbusDeviceId, taskId);     /* lock PD-In data */
-            adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
-            adi->ReadEnd(kbusDeviceId, taskId); /* unlock PD-In data */
-
-            // write outputs
-            adi->WriteStart(kbusDeviceId, taskId); /* lock PD-out data */
-            adi->WriteBytes(kbusDeviceId,taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
-            adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
-            adi->WriteEnd(kbusDeviceId, taskId); /* unlock PD-out data */
-
-            // print info
-            printf("%lu:%02lu:%02lu Loops/s = %i",runtime/3600ul,(runtime/60ul)%60ul,runtime%60ul, loops);
-            loops = 0;
-
             // show process data
             tKbusInput* structuredInputData = (tKbusInput*)kbusInputData;
-            printf("\n*** Power Measurement ***");
             printf("\nStatus bytes [0..3]: %X %X %X %X",
                    (uint8_t)(structuredInputData->p3t495c1[0]),
                    (uint8_t)(structuredInputData->p3t495c1[1]),
@@ -118,6 +115,13 @@ int main(void) {
             printf("\nDigital inputs: %u %u", structuredInputData->p1t4XXc1, structuredInputData->p1t4XXc2);
             printf("\n");
         }
+
+		clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
+		unsigned long runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
+
+		// potential bug: If the loop ever takes longer than the cycle time this will lock up
+		unsigned long remainingUs = CYCLE_TIME_US - (runtimeNs / 1000);
+		usleep(remainingUs);
     }
 
     adi->CloseDevice(kbusDeviceId);
