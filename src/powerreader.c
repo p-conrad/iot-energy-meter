@@ -95,7 +95,6 @@ int main(void) {
 
 		// write outputs
 		adi->WriteStart(kbusDeviceId, taskId);
-		adi->WriteBytes(kbusDeviceId,taskId, 0, sizeof(tKbusOutput), kbusOutputData);
 		adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData);
 		adi->WriteEnd(kbusDeviceId, taskId);
 
