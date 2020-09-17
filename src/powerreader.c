@@ -63,10 +63,8 @@ int main(void) {
     memset(kbusInputData, 0, sizeof(kbusInputData));
     memset(kbusOutputData, 0, sizeof(kbusOutputData));
 
-    // connect to ADI-interface
     adi = adi_GetApplicationInterface();
 
-    // init interface
     adi->Init();
     ErrorCode initResult = find_and_initialize_kbus(adi, &kbusDeviceId);
     if (initResult != ERROR_SUCCESS) {
@@ -91,15 +89,15 @@ int main(void) {
         new_t = time(NULL);
 
 		// read inputs
-		adi->ReadStart(kbusDeviceId, taskId);     /* lock PD-In data */
+		adi->ReadStart(kbusDeviceId, taskId);
 		adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
-		adi->ReadEnd(kbusDeviceId, taskId); /* unlock PD-In data */
+		adi->ReadEnd(kbusDeviceId, taskId);
 
 		// write outputs
-		adi->WriteStart(kbusDeviceId, taskId); /* lock PD-out data */
-		adi->WriteBytes(kbusDeviceId,taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
-		adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
-		adi->WriteEnd(kbusDeviceId, taskId); /* unlock PD-out data */
+		adi->WriteStart(kbusDeviceId, taskId);
+		adi->WriteBytes(kbusDeviceId,taskId, 0, sizeof(tKbusOutput), kbusOutputData);
+		adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData);
+		adi->WriteEnd(kbusDeviceId, taskId);
 
         if (new_t != last_t) {
             last_t = new_t;
@@ -135,7 +133,6 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* 
     size_t nrDevicesFound;
     tApplicationStateChangedEvent event;
 
-    // scan devices
     adi->ScanDevices();
     adi->GetDeviceList(sizeof(deviceList), deviceList, &nrDevicesFound);
 
@@ -147,28 +144,24 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* 
         }
     }
 
-    // kbus not found > exit
     if (nrKbusFound == -1) {
         dprintf(LOGLEVEL_ERR, "No KBUS device found \n");
         adi->Exit();
         return ERROR_KBUS_NOT_FOUND;
     }
 
-    // switch to RT Priority
     s_param.sched_priority = KBUS_MAINPRIO;
     sched_setscheduler(0, SCHED_FIFO, &s_param);
     dprintf(LOGLEVEL_NOTICE, "Scheduling priority set to %d.", KBUS_MAINPRIO);
 
-    // open kbus device
     *kbusDeviceId = deviceList[nrKbusFound].DeviceId;
     if (adi->OpenDevice(*kbusDeviceId) != DAL_SUCCESS) {
         dprintf(LOGLEVEL_ERR, "Kbus device open failed\n");
-        adi->Exit(); // disconnect ADI-Interface
-        return ERROR_KBUS_OPEN_FAILED; // exit program
+        adi->Exit();
+        return ERROR_KBUS_OPEN_FAILED;
     }
     dprintf(LOGLEVEL_NOTICE, "KBUS device opened\n");
 
-    // Set application state to "Running" to drive kbus by your selve.
     event.State = ApplicationState_Running;
     if (adi->ApplicationStateChanged(event) != DAL_SUCCESS) {
         dprintf(LOGLEVEL_ERR, "Set application state to 'Running' failed\n");
