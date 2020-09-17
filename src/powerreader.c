@@ -11,6 +11,7 @@
 #include <dal/adi_application_interface.h>
 
 #include "utils.h"
+#include "kbusinfo.h"
 
 //-----------------------------------------------------------------------------
 // defines and test setup
@@ -45,8 +46,8 @@ int main(void) {
     uint32_t taskId = 0;
 
     // process data
-    uint8_t pd_in[4096];
-    uint8_t pd_out[4096];
+    uint8_t kbusInputData[sizeof(tKbusInput)];
+    uint8_t kbusOutputData[sizeof(tKbusOutput)];
 
     // generic vars
     time_t last_t = 0, new_t;
@@ -58,8 +59,8 @@ int main(void) {
     printf("**************************************************\n");
 
     // clear process memory
-    memset(pd_in, 0, sizeof(pd_in));
-    memset(pd_out, 0, sizeof(pd_out));
+    memset(kbusInputData, 0, sizeof(kbusInputData));
+    memset(kbusOutputData, 0, sizeof(kbusOutputData));
 
     // connect to ADI-interface
     adi = adi_GetApplicationInterface();
@@ -92,22 +93,29 @@ int main(void) {
 
             // read inputs
             adi->ReadStart(kbusDeviceId, taskId);     /* lock PD-In data */
-            adi->ReadBytes(kbusDeviceId, taskId, 0, 1, (uint8_t *) &pd_in[0]);  /* read 1 byte from address 0 */
+            adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
             adi->ReadEnd(kbusDeviceId, taskId); /* unlock PD-In data */
-            // calculate something
-            pd_out[0] += 1;
+
             // write outputs
             adi->WriteStart(kbusDeviceId, taskId); /* lock PD-out data */
-            adi->WriteBytes(kbusDeviceId,taskId,0,1,(uint8_t *) &pd_out[0]); /* write */
-            adi->WriteBytes(kbusDeviceId, taskId, 0, 16, (uint8_t *) &pd_out[0]); /* write */
+            adi->WriteBytes(kbusDeviceId,taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
+            adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData); /* write */
             adi->WriteEnd(kbusDeviceId, taskId); /* unlock PD-out data */
+
             // print info
-            printf("%lu:%02lu:%02lu State = ",runtime/3600ul,(runtime/60ul)%60ul,runtime%60ul);
-            // show loops/s
-            printf("\n        Loop/s = %i ",loops);
+            printf("%lu:%02lu:%02lu Loops/s = %i",runtime/3600ul,(runtime/60ul)%60ul,runtime%60ul, loops);
             loops = 0;
+
             // show process data
-            printf(" Input Data = %02X Output data = %02X ",(int) pd_in[0],(int) pd_out[0]);
+            tKbusInput* structuredInputData = (tKbusInput*)kbusInputData;
+            printf("\n*** Power Measurement ***");
+            printf("\nStatus bytes [0..3]: %X %X %X %X",
+                   (uint8_t)(structuredInputData->p3t495c1[0]),
+                   (uint8_t)(structuredInputData->p3t495c1[1]),
+                   (uint8_t)(structuredInputData->p3t495c1[2]),
+                   (uint8_t)(structuredInputData->p3t495c1[3])
+                  );
+            printf("\nDigital inputs: %u %u", structuredInputData->p1t4XXc1, structuredInputData->p1t4XXc2);
             printf("\n");
         }
     }
