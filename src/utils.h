@@ -51,10 +51,10 @@ extern Loglevel loglevel;
  * @retval The uint32_t read from the buffer
  */
 uint32_t read_uint32(uint8_t* buf, uint32_t offset) {
-	uint32_t result = 0;
-	result |= buf[offset + 3] << 24;
-	result |= buf[offset + 2] << 16;
-	result |= buf[offset + 1] << 8;
-	result |= buf[offset];
-	return result;
+    uint32_t result = 0;
+    result |= buf[offset + 3] << 24;
+    result |= buf[offset + 2] << 16;
+    result |= buf[offset + 1] << 8;
+    result |= buf[offset];
+    return result;
 }

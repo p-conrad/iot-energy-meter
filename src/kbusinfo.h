@@ -17,17 +17,17 @@
 // The typedef struct for the scanned kbusInput
 typedef struct __attribute__((packed))
 {
-	unsigned char p3t495c1[24];	// Position 3, Typ 750-495, Channel 1
-	unsigned int p1t4XXc1:1;	// Position 1, Typ 750-4XX, Channel 1
-	unsigned int p1t4XXc2:1;	// Position 1, Typ 750-4XX, Channel 2
+    unsigned char p3t495c1[24]; // Position 3, Typ 750-495, Channel 1
+    unsigned int p1t4XXc1:1;    // Position 1, Typ 750-4XX, Channel 1
+    unsigned int p1t4XXc2:1;    // Position 1, Typ 750-4XX, Channel 2
 } tKbusInput;
 
 // The typedef struct for the scanned kbusOutput
 typedef struct __attribute__((packed))
 {
-	unsigned char p3t495c1[24];	// Position 3, Typ 750-495, Channel 1
-	unsigned int p2t5XXc1:1;	// Position 2, Typ 750-5XX, Channel 1
-	unsigned int p2t5XXc2:1;	// Position 2, Typ 750-5XX, Channel 2
+    unsigned char p3t495c1[24]; // Position 3, Typ 750-495, Channel 1
+    unsigned int p2t5XXc1:1;    // Position 2, Typ 750-5XX, Channel 1
+    unsigned int p2t5XXc2:1;    // Position 2, Typ 750-5XX, Channel 2
 } tKbusOutput;
 
 // The byte offset of the bit input field in tKbusInput

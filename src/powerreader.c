@@ -89,9 +89,9 @@ int main(void) {
     }
 
     int loops = 0;
-	struct timespec startTime, finishTime;
+    struct timespec startTime, finishTime;
     while (running) {
-		clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
 
         ErrorCode triggerResult = trigger_cycle(adi, kbusDeviceId);
         if (triggerResult != ERROR_SUCCESS) {
@@ -104,22 +104,22 @@ int main(void) {
         // 1s tick for test output
         new_t = time(NULL);
 
-		// read inputs
-		adi->ReadStart(kbusDeviceId, taskId);
-		adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
-		adi->ReadEnd(kbusDeviceId, taskId);
+        // read inputs
+        adi->ReadStart(kbusDeviceId, taskId);
+        adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
+        adi->ReadEnd(kbusDeviceId, taskId);
 
-		// request A/C values of phase 1 (currently unsigned values only)
-		kbusOutputData[3] = 10; // Use the A/C values table
-		kbusOutputData[4] = 1;  // L1 power RMS
-		kbusOutputData[5] = 4;  // L1-N voltage RMS
-		kbusOutputData[6] = 34; // Max L1 power RMS
-		kbusOutputData[7] = 43; // Max L1-N voltage RMS
+        // request A/C values of phase 1 (currently unsigned values only)
+        kbusOutputData[3] = 10; // Use the A/C values table
+        kbusOutputData[4] = 1;  // L1 power RMS
+        kbusOutputData[5] = 4;  // L1-N voltage RMS
+        kbusOutputData[6] = 34; // Max L1 power RMS
+        kbusOutputData[7] = 43; // Max L1-N voltage RMS
 
-		// write outputs
-		adi->WriteStart(kbusDeviceId, taskId);
-		adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData);
-		adi->WriteEnd(kbusDeviceId, taskId);
+        // write outputs
+        adi->WriteStart(kbusDeviceId, taskId);
+        adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData);
+        adi->WriteEnd(kbusDeviceId, taskId);
 
         if (new_t != last_t) {
             last_t = new_t;
@@ -131,20 +131,20 @@ int main(void) {
                    (uint8_t)(structuredInputData->p3t495c1[2]),
                    (uint8_t)(structuredInputData->p3t495c1[3])
                   );
-			printf("\nProcess value 1: %u", read_uint32(structuredInputData->p3t495c1, 8));
-			printf("\nProcess value 2: %u", read_uint32(structuredInputData->p3t495c1, 12));
-			printf("\nProcess value 3: %u", read_uint32(structuredInputData->p3t495c1, 16));
-			printf("\nProcess value 4: %u", read_uint32(structuredInputData->p3t495c1, 20));
+            printf("\nProcess value 1: %u", read_uint32(structuredInputData->p3t495c1, 8));
+            printf("\nProcess value 2: %u", read_uint32(structuredInputData->p3t495c1, 12));
+            printf("\nProcess value 3: %u", read_uint32(structuredInputData->p3t495c1, 16));
+            printf("\nProcess value 4: %u", read_uint32(structuredInputData->p3t495c1, 20));
             printf("\nDigital inputs: %u %u", structuredInputData->p1t4XXc1, structuredInputData->p1t4XXc2);
             printf("\n");
         }
 
-		clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
-		unsigned long runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
+        unsigned long runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
 
-		// potential bug: If the loop ever takes longer than the cycle time this will lock up
-		unsigned long remainingUs = CYCLE_TIME_US - (runtimeNs / 1000);
-		usleep(remainingUs);
+        // potential bug: If the loop ever takes longer than the cycle time this will lock up
+        unsigned long remainingUs = CYCLE_TIME_US - (runtimeNs / 1000);
+        usleep(remainingUs);
     }
 
     adi->CloseDevice(kbusDeviceId);
