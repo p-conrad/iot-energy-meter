@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <dal/adi_application_interface.h>
 
@@ -17,11 +18,25 @@
 // defines and test setup
 //-----------------------------------------------------------------------------
 #define KBUS_MAINPRIO 40
-#define RUNTIME_SECONDS 30
 #define CYCLE_TIME_US 50000
 
 // TODO: This should be configurable by a script
 Loglevel loglevel = LOGLEVEL_DEBUG;
+
+// Signal handling
+volatile sig_atomic_t running = 1;
+
+/**
+ * @brief The signal handler for catching the SIGINT signal.
+ *
+ * @param[in] The signal received
+ */
+void sig_handler(int signum) {
+    if (signum == SIGINT) {
+        dprintf(LOGLEVEL_NOTICE, "Received signal SIGINT, quitting...\n");
+        running = 0;
+    }
+}
 
 /**
  * @brief Finds and intializes the KBus device. Requires the ADI to be initialized before calling.
@@ -52,12 +67,14 @@ int main(void) {
 
     // generic vars
     time_t last_t = 0, new_t;
-    long unsigned runtime = 0;
 
     // startup info */
     printf("**************************************************\n");
     printf("***         WINNER Power Measurement           ***\n");
     printf("**************************************************\n");
+
+    // register signal handler
+    signal(SIGINT, sig_handler);
 
     // clear process memory
     memset(kbusInputData, 0, sizeof(kbusInputData));
@@ -71,10 +88,9 @@ int main(void) {
         return initResult;
     }
 
-    // run main loop for 30s
     int loops = 0;
 	struct timespec startTime, finishTime;
-    while (runtime < RUNTIME_SECONDS) {
+    while (running) {
 		clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
 
         ErrorCode triggerResult = trigger_cycle(adi, kbusDeviceId);
@@ -107,7 +123,6 @@ int main(void) {
 
         if (new_t != last_t) {
             last_t = new_t;
-            runtime++;
             // show process data
             tKbusInput* structuredInputData = (tKbusInput*)kbusInputData;
             printf("\nStatus bytes [0..3]: %X %X %X %X",
