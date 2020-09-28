@@ -29,7 +29,7 @@ volatile sig_atomic_t running = 1;
 /**
  * @brief The signal handler for catching the SIGINT signal.
  *
- * @param[in] The signal received
+ * @param[in] signum The signal received
  */
 void sig_handler(int signum) {
     if (signum == SIGINT) {
