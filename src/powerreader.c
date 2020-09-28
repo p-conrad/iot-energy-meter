@@ -88,7 +88,6 @@ int main(void) {
         return initResult;
     }
 
-    int loops = 0;
     struct timespec startTime, finishTime;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
@@ -98,7 +97,6 @@ int main(void) {
             return triggerResult;
         }
 
-        loops++;
         adi->WatchdogTrigger();
 
         // 1s tick for test output
