@@ -58,3 +58,14 @@ uint32_t read_uint32(uint8_t* buf, uint32_t offset) {
     result |= buf[offset];
     return result;
 }
+
+/**
+ * @brief Reads a int32 from a buffer at a given offset where bytes are in ascending order.
+ *
+ * @param[in] buf The buffer to read from
+ * @param[in] offset The offset in buf to read from
+ * @retval The uint32_t read from the buffer
+ */
+int32_t read_int32(uint8_t* buf, uint32_t offset) {
+	return read_uint32(buf, offset);
+}
