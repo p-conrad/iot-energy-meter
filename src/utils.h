@@ -44,18 +44,17 @@ extern Loglevel loglevel;
 } while(0)
 
 /**
- * @brief Reads a uint32 from a buffer at a given offset where bytes are in ascending order.
+ * @brief Reads a uint32 from a buffer where bytes are in ascending order.
  *
  * @param[in] buf The buffer to read from
- * @param[in] offset The offset in buf to read from
  * @retval The uint32_t read from the buffer
  */
-uint32_t read_uint32(uint8_t* buf, uint32_t offset) {
+uint32_t read_uint32(uint8_t* buf) {
     uint32_t result = 0;
-    result |= buf[offset + 3] << 24;
-    result |= buf[offset + 2] << 16;
-    result |= buf[offset + 1] << 8;
-    result |= buf[offset];
+    result |= buf[3] << 24;
+    result |= buf[2] << 16;
+    result |= buf[1] << 8;
+    result |= buf[0];
     return result;
 }
 
@@ -66,6 +65,6 @@ uint32_t read_uint32(uint8_t* buf, uint32_t offset) {
  * @param[in] offset The offset in buf to read from
  * @retval The uint32_t read from the buffer
  */
-int32_t read_int32(uint8_t* buf, uint32_t offset) {
-	return read_uint32(buf, offset);
+int32_t read_int32(uint8_t* buf) {
+	return read_uint32(buf);
 }

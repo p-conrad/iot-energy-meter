@@ -62,13 +62,12 @@ int main(void) {
     uint32_t taskId = 0;
 
     // process data
-    uint8_t kbusInputData[sizeof(tKbusInput)];
-    uint8_t kbusOutputData[sizeof(tKbusOutput)];
+    tKbusInput inputData;
+    tKbusOutput outputData;
 
     // generic vars
     time_t last_t = 0, new_t;
 
-    // startup info */
     printf("**************************************************\n");
     printf("***         WINNER Power Measurement           ***\n");
     printf("**************************************************\n");
@@ -77,8 +76,8 @@ int main(void) {
     signal(SIGINT, sig_handler);
 
     // clear process memory
-    memset(kbusInputData, 0, sizeof(kbusInputData));
-    memset(kbusOutputData, 0, sizeof(kbusOutputData));
+    memset(&inputData, 0, sizeof(tKbusInput));
+    memset(&outputData, 0, sizeof(tKbusOutput));
 
     adi = adi_GetApplicationInterface();
 
@@ -104,36 +103,38 @@ int main(void) {
 
         // read inputs
         adi->ReadStart(kbusDeviceId, taskId);
-        adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), kbusInputData);
+        adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), (void *) &inputData);
         adi->ReadEnd(kbusDeviceId, taskId);
 
-        // request A/C values of phase 1 (currently unsigned values only)
-        kbusOutputData[3] = 10; // Use the A/C values table
-        kbusOutputData[4] = 1;  // L1 power RMS
-        kbusOutputData[5] = 4;  // L1-N voltage RMS
-        kbusOutputData[6] = 34; // Max L1 power RMS
-        kbusOutputData[7] = 43; // Max L1-N voltage RMS
+        // request A/C values of phase 1
+        outputData.t495Output.commMethod = COMM_PROCESS_DATA;
+        outputData.t495Output.statusRequest = STATUS_L1;
+        outputData.t495Output.colID = AC_MEASUREMENT;
+        outputData.t495Output.metID1 = 1;  // L1 power RMS
+        outputData.t495Output.metID2 = 4;  // L1-N voltage RMS
+        outputData.t495Output.metID3 = 7;  // L1 effective power
+        outputData.t495Output.metID4 = 10; // L1 reactive power
 
         // write outputs
         adi->WriteStart(kbusDeviceId, taskId);
-        adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), kbusOutputData);
+        adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), (void *) &outputData);
         adi->WriteEnd(kbusDeviceId, taskId);
 
         if (new_t != last_t) {
             last_t = new_t;
             // show process data
-            tKbusInput* structuredInputData = (tKbusInput*)kbusInputData;
-            printf("\nStatus bytes [0..3]: %X %X %X %X",
-                   (uint8_t)(structuredInputData->p3t495c1[0]),
-                   (uint8_t)(structuredInputData->p3t495c1[1]),
-                   (uint8_t)(structuredInputData->p3t495c1[2]),
-                   (uint8_t)(structuredInputData->p3t495c1[3])
+            printf("\nErrors (generic, L1, L2, L3): %u %u %u %u, unstable: %u",
+                   inputData.t495Input.genericError,
+                   inputData.t495Input.l1Error,
+                   inputData.t495Input.l2Error,
+                   inputData.t495Input.l3Error,
+                   inputData.t495Input.valuesUnstable
                   );
-            printf("\nProcess value 1: %u", read_uint32(structuredInputData->p3t495c1, 8));
-            printf("\nProcess value 2: %u", read_uint32(structuredInputData->p3t495c1, 12));
-            printf("\nProcess value 3: %u", read_uint32(structuredInputData->p3t495c1, 16));
-            printf("\nProcess value 4: %u", read_uint32(structuredInputData->p3t495c1, 20));
-            printf("\nDigital inputs: %u %u", structuredInputData->p1t4XXc1, structuredInputData->p1t4XXc2);
+            printf("\nL1 Power RMS:       %u", read_uint32(inputData.t495Input.processValue1));
+            printf("\nL1-N voltage RMS:   %u", read_uint32(inputData.t495Input.processValue2));
+            printf("\nL1 effective power: %d", read_int32(inputData.t495Input.processValue3));
+            printf("\nL1 reactive power:  %d", read_int32(inputData.t495Input.processValue4));
+            printf("\nDigital inputs:     %u %u", inputData.p1t4XXc1, inputData.p1t4XXc2);
             printf("\n");
         }
 
