@@ -176,7 +176,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* 
 
     s_param.sched_priority = KBUS_MAINPRIO;
     sched_setscheduler(0, SCHED_FIFO, &s_param);
-    dprintf(LOGLEVEL_NOTICE, "Scheduling priority set to %d.", KBUS_MAINPRIO);
+    dprintf(LOGLEVEL_NOTICE, "Scheduling priority set to %d.\n", KBUS_MAINPRIO);
 
     *kbusDeviceId = deviceList[nrKbusFound].DeviceId;
     if (adi->OpenDevice(*kbusDeviceId) != DAL_SUCCESS) {
