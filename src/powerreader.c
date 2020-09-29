@@ -101,11 +101,6 @@ int main(void) {
         // 1s tick for test output
         new_t = time(NULL);
 
-        // read inputs
-        adi->ReadStart(kbusDeviceId, taskId);
-        adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), (void *) &inputData);
-        adi->ReadEnd(kbusDeviceId, taskId);
-
         // request A/C values of phase 1
         outputData.t495Output.commMethod = COMM_PROCESS_DATA;
         outputData.t495Output.statusRequest = STATUS_L1;
@@ -119,6 +114,11 @@ int main(void) {
         adi->WriteStart(kbusDeviceId, taskId);
         adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), (void *) &outputData);
         adi->WriteEnd(kbusDeviceId, taskId);
+
+        // read inputs
+        adi->ReadStart(kbusDeviceId, taskId);
+        adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), (void *) &inputData);
+        adi->ReadEnd(kbusDeviceId, taskId);
 
         if (new_t != last_t) {
             last_t = new_t;
