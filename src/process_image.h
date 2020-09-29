@@ -43,10 +43,7 @@ typedef struct __attribute__((packed)) {
 
     unsigned char colID;              // COL_ID
 
-    unsigned char metID1;             // MET_ID
-    unsigned char metID2;             // MET_ID
-    unsigned char metID3;             // MET_ID
-    unsigned char metID4;             // MET_ID
+    unsigned char metID[4];           // MET_ID
 
     unsigned char unusedDataWords[16];
 } type495processOutput;
@@ -90,15 +87,9 @@ typedef struct __attribute__((packed)) {
 
     unsigned char colID;               // COL_ID
 
-    unsigned char metID1;              // MET_ID
-    unsigned char metID2;              // MET_ID
-    unsigned char metID3;              // MET_ID
-    unsigned char metID4;              // MET_ID
+    unsigned char metID[4];            // MET_ID
 
-    unsigned char processValue1[4];
-    unsigned char processValue2[4];
-    unsigned char processValue3[4];
-    unsigned char processValue4[4];
+    unsigned char processValue[4][4];
 } type495processInput;
 
 #endif
