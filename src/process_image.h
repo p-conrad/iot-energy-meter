@@ -20,16 +20,6 @@ typedef enum STATUS_REQUEST {
 } STATUS_REQUEST;
 
 /**
- * @brief The collection ID to query measurement values from
- */
-typedef enum COL_ID {
-    AC_MEASUREMENT = 10,
-    HARMONIC_ANALYSIS_L1 = 20,
-    HARMONIC_ANALYSIS_L2 = 21,
-    HARMONIC_ANALYSIS_L3 = 22
-} COL_ID;
-
-/**
  * @brief A struct representing the complete process output image of type 494/495 power measurement modules
  */
 typedef struct __attribute__((packed)) {

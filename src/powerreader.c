@@ -13,6 +13,7 @@
 
 #include "utils.h"
 #include "kbusinfo.h"
+#include "collection.h"
 
 //-----------------------------------------------------------------------------
 // defines and test setup
