@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "kbusinfo.h"
 #include "collection.h"
+#include "unit_description.h"
 
 //-----------------------------------------------------------------------------
 // defines and test setup
@@ -106,10 +107,19 @@ int main(void) {
         outputData.t495Output.commMethod = COMM_PROCESS_DATA;
         outputData.t495Output.statusRequest = STATUS_L1;
         outputData.t495Output.colID = AC_MEASUREMENT;
-        outputData.t495Output.metID[0] = 1;  // L1 power RMS
-        outputData.t495Output.metID[1] = 4;  // L1-N voltage RMS
-        outputData.t495Output.metID[2] = 7;  // L1 effective power
-        outputData.t495Output.metID[3] = 10; // L1 reactive power
+
+        UnitDescription* measurements[] = {
+            &RMSVoltageL1N,
+            &EffectivePowerL1,
+            &ReactivePowerN1,
+            &RMSCurrentL1
+        };
+
+        // TODO: This is a proof of concept only. In the future we want to be able to handle a larger list of
+		// measurements which might not be a multiple 4, where we take 4 UnitDescriptions in each cycle
+        for (int i = 0; i < 4; i++) {
+            outputData.t495Output.metID[i] = measurements[i]->metID;
+        }
 
         // write outputs
         adi->WriteStart(kbusDeviceId, taskId);
@@ -131,11 +141,14 @@ int main(void) {
                    inputData.t495Input.l3Error,
                    inputData.t495Input.valuesUnstable
                   );
-            printf("\nL1 Power RMS:       %u", read_uint32(inputData.t495Input.processValue[0]));
-            printf("\nL1-N voltage RMS:   %u", read_uint32(inputData.t495Input.processValue[1]));
-            printf("\nL1 effective power: %d", read_int32(inputData.t495Input.processValue[2]));
-            printf("\nL1 reactive power:  %d", read_int32(inputData.t495Input.processValue[3]));
-            printf("\nDigital inputs:     %u %u", inputData.p1t4XXc1, inputData.p1t4XXc2);
+			for (int i = 0; i < 4; i++) {
+				UnitDescription *currentUnit = measurements[i];
+				printf("\n%s: %.2f%s",
+					   currentUnit->description,
+					   read_measurement_value(currentUnit, inputData.t495Input.processValue[i]),
+					   currentUnit->unit
+					  );
+			}
             printf("\n");
         }
 

@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include <stdint.h>
 
 /**
@@ -68,3 +71,5 @@ uint32_t read_uint32(uint8_t* buf) {
 int32_t read_int32(uint8_t* buf) {
 	return read_uint32(buf);
 }
+
+#endif
