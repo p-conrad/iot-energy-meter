@@ -65,7 +65,7 @@ typedef struct __attribute__((packed)) {
     unsigned char metID[4];           // MET_ID
 
     unsigned char unusedDataWords[16];
-} type495processOutput;
+} Type495ProcessOutput;
 
 /**
  * @brief An indicator in the process input data showing the current mode of the module
@@ -109,6 +109,6 @@ typedef struct __attribute__((packed)) {
     unsigned char metID[4];            // MET_ID
 
     unsigned char processValue[4][4];
-} type495processInput;
+} Type495ProcessInput;
 
 #endif

@@ -6,7 +6,7 @@
 // The typedef struct for the scanned kbusInput
 typedef struct __attribute__((packed))
 {
-    type495processInput t495Input;     // Position 3, Typ 750-495, Channel 1
+    Type495ProcessInput t495Input;     // Position 3, Typ 750-495, Channel 1
     unsigned int p1t4XXc1:1;           // Position 1, Typ 750-4XX, Channel 1
     unsigned int p1t4XXc2:1;           // Position 1, Typ 750-4XX, Channel 2
 } tKbusInput;
@@ -14,7 +14,7 @@ typedef struct __attribute__((packed))
 // The typedef struct for the scanned kbusOutput
 typedef struct __attribute__((packed))
 {
-    type495processOutput t495Output;   // Position 3, Typ 750-495, Channel 1
+    Type495ProcessOutput t495Output;   // Position 3, Typ 750-495, Channel 1
     unsigned int p2t5XXc1:1;           // Position 2, Typ 750-5XX, Channel 1
     unsigned int p2t5XXc2:1;           // Position 2, Typ 750-5XX, Channel 2
 } tKbusOutput;
