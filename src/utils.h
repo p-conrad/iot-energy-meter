@@ -1,8 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <stdint.h>
-
 /**
  * @brief Definition of possible error codes
  */
@@ -45,31 +43,5 @@ extern Loglevel loglevel;
         if (loglevel >= printlevel)                   \
             fprintf(stderr, format, ##__VA_ARGS__); \
 } while(0)
-
-/**
- * @brief Reads a uint32 from a buffer where bytes are in ascending order.
- *
- * @param[in] buf The buffer to read from
- * @retval The uint32_t read from the buffer
- */
-uint32_t read_uint32(uint8_t* buf) {
-    uint32_t result = 0;
-    result |= buf[3] << 24;
-    result |= buf[2] << 16;
-    result |= buf[1] << 8;
-    result |= buf[0];
-    return result;
-}
-
-/**
- * @brief Reads a int32 from a buffer at a given offset where bytes are in ascending order.
- *
- * @param[in] buf The buffer to read from
- * @param[in] offset The offset in buf to read from
- * @retval The uint32_t read from the buffer
- */
-int32_t read_int32(uint8_t* buf) {
-	return read_uint32(buf);
-}
 
 #endif

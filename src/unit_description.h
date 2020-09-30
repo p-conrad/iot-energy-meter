@@ -3,7 +3,7 @@
 
 #include "stdbool.h"
 #include "collection.h"
-#include "utils.h"
+#include "process_image.h"
 
 /*
  * @brief A struct containing all necessary information for querying a
