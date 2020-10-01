@@ -39,7 +39,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
 /*
  * Some commonly used measurements are defined here for convenience.
  */
- UnitDescription RMSVoltageL1N = {
+UnitDescription RMSVoltageL1N = {
     .metID = VOLTAGE_RMS_L1N,
     .unit = "V",
     .description = "RMS voltage, L1-N",
@@ -47,7 +47,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription RMSVoltageL2N = {
+UnitDescription RMSVoltageL2N = {
     .metID = VOLTAGE_RMS_L2N,
     .unit = "V",
     .description = "RMS voltage, L2-N",
@@ -55,7 +55,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription RMSVoltageL3N = {
+UnitDescription RMSVoltageL3N = {
     .metID = VOLTAGE_RMS_L3N,
     .unit = "V",
     .description = "RMS voltage, L3-N",
@@ -63,7 +63,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription RMSCurrentL1 = {
+UnitDescription RMSCurrentL1 = {
     .metID = CURRENT_RMS_L1,
     .unit = "A",
     .description = "RMS current, L1",
@@ -71,7 +71,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription RMSCurrentL2 = {
+UnitDescription RMSCurrentL2 = {
     .metID = CURRENT_RMS_L2,
     .unit = "A",
     .description = "RMS current, L2",
@@ -79,7 +79,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription RMSCurrentL3 = {
+UnitDescription RMSCurrentL3 = {
     .metID = CURRENT_RMS_L3,
     .unit = "A",
     .description = "RMS current, L3",
@@ -87,7 +87,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription RMSCurrentN = {
+UnitDescription RMSCurrentN = {
     .metID = CURRENT_RMS_N,
     .unit = "A",
     .description = "RMS current, N",
@@ -95,7 +95,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription EffectivePowerL1 = {
+UnitDescription EffectivePowerL1 = {
     .metID = POWER_EFFECTIVE_L1,
     .unit = "W",
     .description = "Effective Power, L1",
@@ -103,7 +103,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = false
 };
 
- UnitDescription EffectivePowerL2 = {
+UnitDescription EffectivePowerL2 = {
     .metID = POWER_EFFECTIVE_L2,
     .unit = "W",
     .description = "Effective Power, L2",
@@ -111,7 +111,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = false
 };
 
- UnitDescription EffectivePowerL3 = {
+UnitDescription EffectivePowerL3 = {
     .metID = POWER_EFFECTIVE_L3,
     .unit = "W",
     .description = "Effective Power, L3",
@@ -119,7 +119,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = false
 };
 
- UnitDescription ReactivePowerN1 = {
+UnitDescription ReactivePowerN1 = {
     .metID = POWER_REACTIVE_L1,
     .unit = "VAR",
     .description = "Reactive Power, L1",
@@ -127,7 +127,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = false
 };
 
- UnitDescription ReactivePowerN2 = {
+UnitDescription ReactivePowerN2 = {
     .metID = POWER_REACTIVE_L2,
     .unit = "VAR",
     .description = "Reactive Power, L2",
@@ -135,7 +135,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = false
 };
 
- UnitDescription ReactivePowerN3 = {
+UnitDescription ReactivePowerN3 = {
     .metID = POWER_REACTIVE_L3,
     .unit = "VAR",
     .description = "Reactive Power, L3",
@@ -143,7 +143,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = false
 };
 
- UnitDescription ApparentPowerL1 = {
+UnitDescription ApparentPowerL1 = {
     .metID = POWER_APPARENT_L1,
     .unit = "VAR",
     .description = "Apparent Power, L1",
@@ -151,7 +151,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription ApparentPowerL2 = {
+UnitDescription ApparentPowerL2 = {
     .metID = POWER_APPARENT_L2,
     .unit = "VAR",
     .description = "Apparent Power, L2",
@@ -159,7 +159,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     .isUnsigned = true
 };
 
- UnitDescription ApparentPowerL3 = {
+UnitDescription ApparentPowerL3 = {
     .metID = POWER_APPARENT_L3,
     .unit = "VAR",
     .description = "Apparent Power, L3",
