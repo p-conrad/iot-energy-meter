@@ -81,8 +81,19 @@ int main(void) {
     memset(&inputData, 0, sizeof(tKbusInput));
     memset(&outputData, 0, sizeof(tKbusOutput));
 
-    adi = adi_GetApplicationInterface();
+    // set the list of measurements to take
+    UnitDescription *listOfMeasurements[] = {
+        &RMSVoltageL1N,
+        &EffectivePowerL1,
+        &ReactivePowerN1,
+        &RMSCurrentL1
+    };
+    size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
+    size_t measurementCursor = 0;
+    UnitDescription *currentMeasurements[4];
 
+    // initialize the ADI
+    adi = adi_GetApplicationInterface();
     adi->Init();
     ErrorCode initResult = find_and_initialize_kbus(adi, &kbusDeviceId);
     if (initResult != ERROR_SUCCESS) {
@@ -108,17 +119,12 @@ int main(void) {
         outputData.t495Output.statusRequest = STATUS_L1;
         outputData.t495Output.colID = AC_MEASUREMENT;
 
-        UnitDescription* measurements[] = {
-            &RMSVoltageL1N,
-            &EffectivePowerL1,
-            &ReactivePowerN1,
-            &RMSCurrentL1
-        };
-
-        // TODO: This is a proof of concept only. In the future we want to be able to handle a larger list of
-		// measurements which might not be a multiple 4, where we take 4 UnitDescriptions in each cycle
-        for (int i = 0; i < 4; i++) {
-            outputData.t495Output.metID[i] = measurements[i]->metID;
+        for (int i = 0; i < 4; i++, measurementCursor++) {
+            if (measurementCursor == nrOfMeasurements) {
+                measurementCursor = 0;
+            }
+            currentMeasurements[i] = listOfMeasurements[measurementCursor];
+            outputData.t495Output.metID[i] = currentMeasurements[i]->metID;
         }
 
         // write outputs
@@ -141,14 +147,13 @@ int main(void) {
                    inputData.t495Input.l3Error,
                    inputData.t495Input.valuesUnstable
                   );
-			for (int i = 0; i < 4; i++) {
-				UnitDescription *currentUnit = measurements[i];
-				printf("\n%s: %.2f%s",
-					   currentUnit->description,
-					   read_measurement_value(currentUnit, inputData.t495Input.processValue[i]),
-					   currentUnit->unit
-					  );
-			}
+            for (int i = 0; i < 4; i++) {
+                printf("\n%s: %.2f%s",
+                       currentMeasurements[i]->description,
+                       read_measurement_value(currentMeasurements[i], inputData.t495Input.processValue[i]),
+                       currentMeasurements[i]->unit
+                      );
+            }
             printf("\n");
         }
 
