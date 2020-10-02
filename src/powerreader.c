@@ -47,7 +47,7 @@ void sig_handler(int signum) {
  * @param[out] kbusDeviceId The ID of the found KBus device
  * @retval ERROR_SUCCESS (0) on success
  */
-ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* kbusDeviceId);
+ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *kbusDeviceId);
 
 /**
  * @brief Triggers one KBus cycle.
@@ -56,11 +56,11 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* 
  * @param[out] kbusDeviceId The ID of the found KBus device
  * @retval ERROR_SUCCESS (0) on success
  */
-ErrorCode trigger_cycle(tApplicationDeviceInterface* adi, tDeviceId kbusDeviceId);
+ErrorCode trigger_cycle(tApplicationDeviceInterface *adi, tDeviceId kbusDeviceId);
 
 int main(void) {
     tDeviceId kbusDeviceId;
-    tApplicationDeviceInterface* adi;
+    tApplicationDeviceInterface *adi;
     uint32_t taskId = 0;
 
     // process data
@@ -170,7 +170,7 @@ int main(void) {
     return ERROR_SUCCESS;
 }
 
-ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* kbusDeviceId) {
+ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *kbusDeviceId) {
     struct sched_param s_param;
     tDeviceInfo deviceList[10];
     size_t nrDevicesFound;
@@ -217,7 +217,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface* adi, tDeviceId* 
     return ERROR_SUCCESS;
 }
 
-ErrorCode trigger_cycle(tApplicationDeviceInterface* adi, tDeviceId kbusDeviceId) {
+ErrorCode trigger_cycle(tApplicationDeviceInterface *adi, tDeviceId kbusDeviceId) {
         uint32_t pushRetval = 0;
 
         if (adi->CallDeviceSpecificFunction("libpackbus_Push", &pushRetval) != DAL_SUCCESS) {
