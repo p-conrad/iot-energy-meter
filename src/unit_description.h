@@ -2,6 +2,7 @@
 #define UNIT_DESCRIPTION_H
 
 #include "stdbool.h"
+#include "stddef.h"
 #include "collection.h"
 #include "process_image.h"
 
@@ -34,6 +35,28 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
         result = (double) read_int32(buf);
     }
     return result / unit->scalingFactor;
+}
+
+/*
+ * @brief Finds the UnitDescription with a given MET_ID in a provided list.
+ *        Useful for correctly interpreting the process values from a given process input.
+ *
+ * @param[in] list An Array of pointers to avalable UnitDescription instances
+ * @param[in] listSize The size of the provided array
+ * @param[in] id The measurement ID from the process input to search for
+ *
+ * @retval A pointer to the corresponding UnitDescription if found, NULL otherwise
+ */
+UnitDescription *find_description_with_id(UnitDescription **list, size_t listSize, int id) {
+    if (list == NULL || listSize == 0 || id == 0) {
+        return NULL;
+    }
+    for (size_t i = 0; i < listSize; i++) {
+        if (list[i]->metID == id) {
+            return list[i];
+        }
+    }
+    return NULL;
 }
 
 /*

@@ -90,7 +90,6 @@ int main(void) {
     };
     size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
     size_t measurementCursor = 0;
-    UnitDescription *currentMeasurements[4];
 
     // initialize the ADI
     adi = adi_GetApplicationInterface();
@@ -114,7 +113,7 @@ int main(void) {
         // 1s tick for test output
         new_t = time(NULL);
 
-        // request A/C values of phase 1
+        // request A/C values and status of L1
         outputData.t495Output.commMethod = COMM_PROCESS_DATA;
         outputData.t495Output.statusRequest = STATUS_L1;
         outputData.t495Output.colID = AC_MEASUREMENT;
@@ -123,8 +122,7 @@ int main(void) {
             if (measurementCursor == nrOfMeasurements) {
                 measurementCursor = 0;
             }
-            currentMeasurements[i] = listOfMeasurements[measurementCursor];
-            outputData.t495Output.metID[i] = currentMeasurements[i]->metID;
+            outputData.t495Output.metID[i] = listOfMeasurements[measurementCursor]->metID;
         }
 
         // write outputs
@@ -148,11 +146,16 @@ int main(void) {
                    inputData.t495Input.valuesUnstable
                   );
             for (int i = 0; i < 4; i++) {
-                printf("\n%s: %.2f%s",
-                       currentMeasurements[i]->description,
-                       read_measurement_value(currentMeasurements[i], inputData.t495Input.processValue[i]),
-                       currentMeasurements[i]->unit
-                      );
+                UnitDescription *description = find_description_with_id(listOfMeasurements,
+                                                                        nrOfMeasurements,
+                                                                        inputData.t495Input.metID[i]);
+                if (description != NULL) {
+                    printf("\n%s: %.2f%s",
+                           description->description,
+                           read_measurement_value(description, inputData.t495Input.processValue[i]),
+                           description->unit
+                          );
+                }
             }
             printf("\n");
         }
