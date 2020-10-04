@@ -186,7 +186,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *
     adi->GetDeviceList(sizeof(deviceList), deviceList, &nrDevicesFound);
 
     size_t nrKbusFound = -1;
-    for (int i = 0; i < nrDevicesFound; ++i) {
+    for (size_t i = 0; i < nrDevicesFound; ++i) {
         if (strcmp(deviceList[i].DeviceName, "libpackbus") == 0) {
             nrKbusFound = i;
             dprintf(LOGLEVEL_DEBUG, "KBUS device found as device %i\n", i);
