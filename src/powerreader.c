@@ -196,7 +196,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *
     if (nrKbusFound == -1) {
         dprintf(LOGLEVEL_ERR, "No KBUS device found \n");
         adi->Exit();
-        return ERROR_KBUS_NOT_FOUND;
+        return -ERROR_KBUS_NOT_FOUND;
     }
 
     s_param.sched_priority = KBUS_MAINPRIO;
@@ -207,7 +207,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *
     if (adi->OpenDevice(*kbusDeviceId) != DAL_SUCCESS) {
         dprintf(LOGLEVEL_ERR, "Kbus device open failed\n");
         adi->Exit();
-        return ERROR_KBUS_OPEN_FAILED;
+        return -ERROR_KBUS_OPEN_FAILED;
     }
     dprintf(LOGLEVEL_NOTICE, "KBUS device opened\n");
 
@@ -216,7 +216,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *
         dprintf(LOGLEVEL_ERR, "Set application state to 'Running' failed\n");
         adi->CloseDevice(*kbusDeviceId);
         adi->Exit();
-        return ERROR_STATE_CHANGE_FAILED;
+        return -ERROR_STATE_CHANGE_FAILED;
     }
     dprintf(LOGLEVEL_NOTICE, "Application state set to 'running'\n");
 
@@ -230,14 +230,14 @@ ErrorCode trigger_cycle(tApplicationDeviceInterface *adi, tDeviceId kbusDeviceId
             dprintf(LOGLEVEL_ERR, "CallDeviceSpecificFunction failed\n");
             adi->CloseDevice(kbusDeviceId);
             adi->Exit();
-            return ERROR_DEVICE_SPECIFIC_FUNCTION_FAILED;
+            return -ERROR_DEVICE_SPECIFIC_FUNCTION_FAILED;
         }
 
         if (pushRetval != DAL_SUCCESS) {
             dprintf(LOGLEVEL_ERR, "Function 'libpackbus_Push' failed\n");
             adi->CloseDevice(kbusDeviceId);
             adi->Exit();
-            return ERROR_LIBPACKBUS_PUSH_FAILED;
+            return -ERROR_LIBPACKBUS_PUSH_FAILED;
         }
 
     return ERROR_SUCCESS;
