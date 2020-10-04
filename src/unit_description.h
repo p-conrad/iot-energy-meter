@@ -7,7 +7,7 @@
 #include "collection.h"
 #include "process_image.h"
 
-/*
+/**
  * @brief A struct containing all necessary information for querying a
  *        measurement value.
  */
@@ -38,7 +38,7 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
     return result / unit->scalingFactor;
 }
 
-/*
+/**
  * @brief Finds the UnitDescription with a given MET_ID in a provided list.
  *        Useful for correctly interpreting the process values from a given process input.
  *

@@ -3,7 +3,9 @@
 
 #include "process_image.h"
 
-// The typedef struct for the scanned kbusInput
+/**
+ * @brief A structure representing the process input of the current system in use.
+ */
 typedef struct __attribute__((packed))
 {
     Type495ProcessInput t495Input;     // Position 3, Typ 750-495, Channel 1
@@ -11,7 +13,9 @@ typedef struct __attribute__((packed))
     unsigned int p1t4XXc2:1;           // Position 1, Typ 750-4XX, Channel 2
 } tKbusInput;
 
-// The typedef struct for the scanned kbusOutput
+/**
+ * @brief A structure representing the process output of the current system in use.
+ */
 typedef struct __attribute__((packed))
 {
     Type495ProcessOutput t495Output;   // Position 3, Typ 750-495, Channel 1
