@@ -88,7 +88,10 @@ int main(void) {
         &ReactivePowerN1,
         &RMSCurrentL1
     };
-    size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
+    const size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
+    // The module can provide up to 4 measurements. If our list is shorter than that, instead of looping around we
+    // simply don't fill the leftover slots.
+    const size_t iMax = nrOfMeasurements >= 4 ? 4 : nrOfMeasurements;
     size_t measurementCursor = 0;
 
     // initialize the ADI
@@ -118,7 +121,7 @@ int main(void) {
         outputData.t495Output.statusRequest = STATUS_L1;
         outputData.t495Output.colID = AC_MEASUREMENT;
 
-        for (int i = 0; i < 4; i++, measurementCursor++) {
+        for (size_t i = 0; i < iMax; i++, measurementCursor++) {
             if (measurementCursor == nrOfMeasurements) {
                 measurementCursor = 0;
             }
@@ -145,7 +148,7 @@ int main(void) {
                    inputData.t495Input.l3Error,
                    inputData.t495Input.valuesUnstable
                   );
-            for (int i = 0; i < 4; i++) {
+            for (size_t i = 0; i < iMax; i++) {
                 UnitDescription *description = find_description_with_id(listOfMeasurements,
                                                                         nrOfMeasurements,
                                                                         inputData.t495Input.metID[i]);
