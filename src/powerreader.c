@@ -138,6 +138,12 @@ int main(void) {
         adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), (void *) &inputData);
         adi->ReadEnd(kbusDeviceId, taskId);
 
+        if (results_unstable(&inputData.t495Input, iMax)) {
+            goto finish_cycle;
+        }
+
+        /* TODO: process the stable results here */
+
         if (new_t != last_t) {
             last_t = new_t;
             // show process data
@@ -163,6 +169,7 @@ int main(void) {
             printf("\n");
         }
 
+finish_cycle:
         clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
         unsigned long runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
 

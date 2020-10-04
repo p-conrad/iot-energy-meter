@@ -1,6 +1,8 @@
 #ifndef PROCESS_IMAGE_H
 #define PROCESS_IMAGE_H
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 /**
@@ -28,7 +30,6 @@ uint32_t read_uint32(uint8_t *buf) {
 int32_t read_int32(uint8_t *buf) {
 	return read_uint32(buf);
 }
-
 
 /**
  * @brief The communication method used for the process image
@@ -110,5 +111,25 @@ typedef struct __attribute__((packed)) {
 
     unsigned char processValue[4][4];
 } Type495ProcessInput;
+
+/**
+ * @brief Checks whether some measurements in the collection are still unstable or not available
+ *
+ * @param[in] input The process input image obtained from the module
+ * @param[in] iMax The maximum index to check for
+ *
+ * @retval true if the valuesUnstable flag is set or any of the metIDs are 0, false otherwise
+ */
+bool results_unstable(Type495ProcessInput *input, const size_t iMax) {
+    if (input->valuesUnstable) {
+	return true;
+    }
+    for (size_t i = 0; i < iMax; i++) {
+	if (input->metID[i] == 0) {
+	    return true;
+	}
+    }
+    return false;
+}
 
 #endif
