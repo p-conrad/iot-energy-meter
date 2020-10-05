@@ -70,7 +70,7 @@ UnitDescription *find_description_with_id(const UnitDescription **list, size_t l
             if (index != NULL) {
                 *index = i;
             }
-            return list[i];
+            return (UnitDescription *)list[i];
         }
     }
     return NULL;
