@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "MQTTAsync.h"
 #include "unit_description.h"
 
 /**
@@ -20,7 +21,7 @@ typedef struct CompleteResultSet {
 } CompleteResultSet;
 
 /**
- * @brief Allocates and returns a ComleteResult set from a given ResultSet.
+ * @brief Allocates and returns a CompleteResult set from a given ResultSet.
  *
  * This is supposed to be called from the main loop only after the ResultSet has been finished, so no checks for
  * completeness are done here.
