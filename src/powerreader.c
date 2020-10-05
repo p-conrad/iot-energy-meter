@@ -125,6 +125,7 @@ int main(void) {
 
     struct timespec startTime, finishTime;
     bool outputPending = false;
+    unsigned long runtimeNs = 0, remainingUs = 0;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
 
@@ -201,6 +202,7 @@ int main(void) {
                        results.descriptions[i]->unit
                       );
             }
+            printf("\nLast cycle: %luus (%luus remaining)", runtimeNs / 1000, remainingUs);
             printf("\n");
             outputPending = false;
         }
@@ -214,10 +216,10 @@ int main(void) {
 
 finish_cycle:
         clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
-        unsigned long runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
+        runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
 
         // potential bug: If the loop ever takes longer than the cycle time this will lock up
-        unsigned long remainingUs = CYCLE_TIME_US - (runtimeNs / 1000);
+        remainingUs = CYCLE_TIME_US - (runtimeNs / 1000);
         usleep(remainingUs);
     }
 
