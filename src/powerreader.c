@@ -15,6 +15,7 @@
 #include "kbusinfo.h"
 #include "collection.h"
 #include "unit_description.h"
+#include "mqtt.h"
 
 //-----------------------------------------------------------------------------
 // defines and test setup
@@ -209,7 +210,17 @@ int main(void) {
 
         // set timestamp, do something with the finished results (TODO) and then reset them
         if (results.currentCount == results.size) {
-            clock_gettime(CLOCK_TAI, &results.timestamp);
+            CompleteResultSet *crs = allocate_crs(&results);
+
+            if (crs == NULL) {
+                dprintf(LOGLEVEL_CRIT,
+                        "Failed to allocate memory for the MQTT routines. Measurements are being dropped.\n");
+            }
+
+            // TODO: hand crs to the MQTT routines and let them handle any further processing including freeing
+            free((void *)crs->values);
+            free(crs);
+
             results.currentCount = 0;
             memset(results.validity, 0, sizeof(bool) * results.size);
         }
