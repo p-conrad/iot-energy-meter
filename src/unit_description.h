@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <time.h>
 
 #include "collection.h"
 #include "process_image.h"
@@ -20,7 +21,19 @@ typedef struct UnitDescription {
     const bool isUnsigned;
 } UnitDescription;
 
-/*
+/**
+ * @brief A struct containing a list of UnitDescription together with their current result values, and a timestamp.
+ */
+typedef struct ResultSet {
+    const UnitDescription **descriptions;
+    const size_t size;
+    double *values;                 /* result values at the same positions as descriptions */
+    bool *validity;                 /* used to determine whether a certain value has already been filled */
+    size_t currentCount;            /* number of valid entries to quickly know whether the set is finshed */
+    struct timespec timestamp;
+} ResultSet;
+
+/**
  * @brief Reads and converts a measurement value according to its unit description.
  *
  * @param[in] unit A pointer to the unit description
@@ -28,7 +41,7 @@ typedef struct UnitDescription {
  *
  * @retval The converted and correctly scaled measurement value in double precision
  */
-double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
+double read_measurement_value(const UnitDescription *unit, unsigned char *buf) {
     double result;
     if (unit->isUnsigned) {
         result = (double) read_uint32(buf);
@@ -45,15 +58,19 @@ double read_measurement_value(UnitDescription *unit, unsigned char *buf) {
  * @param[in] list An Array of pointers to avalable UnitDescription instances
  * @param[in] listSize The size of the provided array
  * @param[in] id The measurement ID from the process input to search for
+ * @param[out] index The list index of the found description (can be NULL if not desired)
  *
  * @retval A pointer to the corresponding UnitDescription if found, NULL otherwise
  */
-UnitDescription *find_description_with_id(UnitDescription **list, size_t listSize, int id) {
+UnitDescription *find_description_with_id(const UnitDescription **list, size_t listSize, int id, size_t *index) {
     if (list == NULL || listSize == 0 || id == 0) {
         return NULL;
     }
     for (size_t i = 0; i < listSize; i++) {
         if (list[i]->metID == id) {
+            if (index != NULL) {
+                *index = i;
+            }
             return list[i];
         }
     }

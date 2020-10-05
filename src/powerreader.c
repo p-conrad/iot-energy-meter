@@ -81,18 +81,39 @@ int main(void) {
     memset(&inputData, 0, sizeof(tKbusInput));
     memset(&outputData, 0, sizeof(tKbusOutput));
 
-    // set the list of measurements to take
-    UnitDescription *listOfMeasurements[] = {
+    // set the list of measurements to take and initialize the results set
+    const UnitDescription *listOfMeasurements[] = {
         &RMSVoltageL1N,
         &EffectivePowerL1,
         &ReactivePowerN1,
-        &RMSCurrentL1
+        &RMSVoltageL2N,
+        &EffectivePowerL2,
+        &ReactivePowerN2,
+        &RMSVoltageL3N,
+        &EffectivePowerL3,
+        &ReactivePowerN3
     };
     const size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
     // The module can provide up to 4 measurements. If our list is shorter than that, instead of looping around we
     // simply don't fill the leftover slots.
     const size_t iMax = nrOfMeasurements >= 4 ? 4 : nrOfMeasurements;
     size_t measurementCursor = 0;
+
+    ResultSet results = {
+        .descriptions = listOfMeasurements,
+        .size = nrOfMeasurements,
+        .values = malloc(sizeof(double) * nrOfMeasurements),
+        .validity = malloc(sizeof(bool) * nrOfMeasurements),
+        .currentCount = 0
+    };
+
+    if (results.values == NULL || results.validity == NULL) {
+        dprintf(LOGLEVEL_ERR, "Memory allocation failed.");
+        return -ERROR_ALLOCATION_FAILED;
+    }
+
+    memset(results.values, 0, sizeof(double) * nrOfMeasurements);
+    memset(results.validity, 0, sizeof(bool) * nrOfMeasurements);
 
     // initialize the ADI
     adi = adi_GetApplicationInterface();
@@ -103,6 +124,7 @@ int main(void) {
     }
 
     struct timespec startTime, finishTime;
+    bool outputPending = false;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
 
@@ -142,31 +164,52 @@ int main(void) {
             goto finish_cycle;
         }
 
-        /* TODO: process the stable results here */
+        // fill the results set
+        for (size_t i = 0; i < iMax; i++) {
+            size_t index;
+            UnitDescription *description = find_description_with_id(results.descriptions,
+                                                                    results.size,
+                                                                    inputData.t495Input.metID[i],
+                                                                    &index);
+            if (description == NULL) continue;
 
+            results.values[index] = read_measurement_value(description, inputData.t495Input.processValue[i]);
+            if (!results.validity[index]) {
+                results.validity[index] = true;
+                results.currentCount += 1;
+            }
+        }
+
+        // output results (roughly) every second when our results are complete
         if (new_t != last_t) {
+            outputPending = true;
             last_t = new_t;
+        }
+
+        if (outputPending && results.currentCount == results.size) {
             // show process data
-            printf("\nErrors (generic, L1, L2, L3): %u %u %u %u, unstable: %u",
+            printf("\nErrors (generic, L1, L2, L3): %u %u %u %u",
                    inputData.t495Input.genericError,
                    inputData.t495Input.l1Error,
                    inputData.t495Input.l2Error,
-                   inputData.t495Input.l3Error,
-                   inputData.t495Input.valuesUnstable
+                   inputData.t495Input.l3Error
                   );
-            for (size_t i = 0; i < iMax; i++) {
-                UnitDescription *description = find_description_with_id(listOfMeasurements,
-                                                                        nrOfMeasurements,
-                                                                        inputData.t495Input.metID[i]);
-                if (description != NULL) {
-                    printf("\n%s: %.2f%s",
-                           description->description,
-                           read_measurement_value(description, inputData.t495Input.processValue[i]),
-                           description->unit
-                          );
-                }
+            for (size_t i = 0; i < results.size; i++) {
+                printf("\n%s: %.2f%s",
+                       results.descriptions[i]->description,
+                       results.values[i],
+                       results.descriptions[i]->unit
+                      );
             }
             printf("\n");
+            outputPending = false;
+        }
+
+        // set timestamp, do something with the finished results (TODO) and then reset them
+        if (results.currentCount == results.size) {
+            clock_gettime(CLOCK_TAI, &results.timestamp);
+            results.currentCount = 0;
+            memset(results.validity, 0, sizeof(bool) * results.size);
         }
 
 finish_cycle:
