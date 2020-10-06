@@ -97,7 +97,7 @@ void on_send(void *context, MQTTAsync_successData *response) {
 
 void on_send_failure(void *context, MQTTAsync_failureData *response) {
     dprintf(LOGLEVEL_ERR,
-            "Message send failed token %d error code %d\n",
+            "Sending message failed for token %d, error code: %d\n",
             response->token,
             response->code);
 }
