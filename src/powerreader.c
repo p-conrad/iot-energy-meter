@@ -11,6 +11,7 @@
 
 #include <dal/adi_application_interface.h>
 
+#include "MQTTAsync.h"
 #include "utils.h"
 #include "kbusinfo.h"
 #include "collection.h"
@@ -124,6 +125,9 @@ int main(void) {
         return initResult;
     }
 
+    // set up MQTT
+    MQTTAsync client = MQTT_init_and_connect();
+
     struct timespec startTime, finishTime;
     bool outputPending = false;
     unsigned long runtimeNs = 0, remainingUs = 0;
@@ -234,6 +238,7 @@ finish_cycle:
         usleep(remainingUs);
     }
 
+    MQTT_disconnect_and_destroy(client);
     adi->CloseDevice(kbusDeviceId);
     adi->Exit();
     return ERROR_SUCCESS;

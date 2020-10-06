@@ -11,7 +11,7 @@ CFLAGS += -I$(SYSROOT)/usr/include/dal/
 # Linker flags
 #------------------------------------------------------------------------------
 LDFLAGS += -ldal -llibloader -lpthread -lffi -lrt -ldbus-glib-1 -lglib-2.0 
-LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon
+LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon -lpaho-mqtt3as
 
 
 all: powerreader
