@@ -160,4 +160,34 @@ void MQTT_disconnect_and_destroy(MQTTAsync client) {
     MQTTAsync_destroy(&client);
 }
 
+/**
+ * @brief Turns a ResultSet into a human-readable string to be sent out via MQTT.
+ *
+ * @param[in] results A pointer to the completed ResultSet instance
+ * @retval The resulting string allocated on the heap
+ */
+char *get_MQTT_message_string(ResultSet *results) {
+    // Anything involving strings in C is awful, so I'm not sure if this is the right way to do it.
+    // potential TODO: check this again, especially regarding memory safety
+    char resultBuf[4096];
+    char lineBuf[128];
+    memset(resultBuf, 0, sizeof(resultBuf));
+    memset(lineBuf, 0, sizeof(lineBuf));
+
+    for (size_t i = 0; i < results->size; i++) {
+        sprintf(lineBuf,
+                "%s: %.2f %s\n",
+                results->descriptions[i]->description,
+                results->values[i],
+                results->descriptions[i]->unit);
+        strcat(resultBuf, lineBuf);
+    }
+    char *result = malloc(strlen(resultBuf) + 1);
+    if (result == NULL) {
+        return NULL;
+    }
+    strcpy(result, resultBuf);
+    return result;
+}
+
 #endif

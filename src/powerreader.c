@@ -127,6 +127,10 @@ int main(void) {
 
     // set up MQTT
     MQTTAsync client = MQTT_init_and_connect();
+    MQTTAsync_responseOptions responseOpts = MQTTAsync_responseOptions_initializer;
+    responseOpts.onSuccess = on_send;
+    responseOpts.onFailure = on_send_failure;
+    responseOpts.context = client;
 
     struct timespec startTime, finishTime;
     bool outputPending = false;
@@ -212,19 +216,28 @@ int main(void) {
             outputPending = false;
         }
 
-        // set timestamp, do something with the finished results (TODO) and then reset them
+        // set timestamp, do something with the finished results and then reset them
         if (results.currentCount == results.size) {
-            CompleteResultSet *crs = allocate_crs(&results);
+            if (MQTTAsync_isConnected(client)) {
+                // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
+                char *messageStr = get_MQTT_message_string(&results);
+                if (messageStr == NULL) {
+                    dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string.\n");
+                    goto reset_results;
+                }
+                MQTTAsync_message message = MQTTAsync_message_initializer;
+                message.payload = get_MQTT_message_string(&results);
+                message.payloadlen = strlen(message.payload);
+                message.qos = MQTT_QOS_DEFAULT;
+                message.retained = 0;
 
-            if (crs == NULL) {
-                dprintf(LOGLEVEL_CRIT,
-                        "Failed to allocate memory for the MQTT routines. Measurements are being dropped.\n");
+                int pubResult;
+                if ((pubResult = MQTTAsync_sendMessage(client, MQTT_TOPIC, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
+                    printf("Failed to start sendMessage, return code %d\n", pubResult);
+                    exit(EXIT_FAILURE);
+                }
             }
-
-            // TODO: hand crs to the MQTT routines and let them handle any further processing including freeing
-            free((void *)crs->values);
-            free(crs);
-
+reset_results:
             results.currentCount = 0;
             memset(results.validity, 0, sizeof(bool) * results.size);
         }
