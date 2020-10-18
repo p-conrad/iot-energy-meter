@@ -148,23 +148,6 @@ int main(void) {
         // 1s tick for test output
         new_t = time(NULL);
 
-        // request A/C values and status of L1
-        outputData.t495Output.commMethod = COMM_PROCESS_DATA;
-        outputData.t495Output.statusRequest = STATUS_L1;
-        outputData.t495Output.colID = AC_MEASUREMENT;
-
-        for (size_t i = 0; i < iMax; i++, measurementCursor++) {
-            if (measurementCursor == nrOfMeasurements) {
-                measurementCursor = 0;
-            }
-            outputData.t495Output.metID[i] = listOfMeasurements[measurementCursor]->metID;
-        }
-
-        // write outputs
-        adi->WriteStart(kbusDeviceId, taskId);
-        adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), (void *) &outputData);
-        adi->WriteEnd(kbusDeviceId, taskId);
-
         // read inputs
         adi->ReadStart(kbusDeviceId, taskId);
         adi->ReadBytes(kbusDeviceId, taskId, 0, sizeof(tKbusInput), (void *) &inputData);
@@ -240,6 +223,23 @@ reset_results:
             results.currentCount = 0;
             memset(results.validity, 0, sizeof(bool) * results.size);
         }
+
+        // request A/C values and status of L1
+        outputData.t495Output.commMethod = COMM_PROCESS_DATA;
+        outputData.t495Output.statusRequest = STATUS_L1;
+        outputData.t495Output.colID = AC_MEASUREMENT;
+
+        for (size_t i = 0; i < iMax; i++, measurementCursor++) {
+            if (measurementCursor == nrOfMeasurements) {
+                measurementCursor = 0;
+            }
+            outputData.t495Output.metID[i] = listOfMeasurements[measurementCursor]->metID;
+        }
+
+        // write outputs
+        adi->WriteStart(kbusDeviceId, taskId);
+        adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), (void *) &outputData);
+        adi->WriteEnd(kbusDeviceId, taskId);
 
 finish_cycle:
         clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
