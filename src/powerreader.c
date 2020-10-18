@@ -234,7 +234,6 @@ int main(void) {
                 int pubResult;
                 if ((pubResult = MQTTAsync_sendMessage(client, MQTT_TOPIC, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
                     printf("Failed to start sendMessage, return code %d\n", pubResult);
-                    exit(EXIT_FAILURE);
                 }
             }
 reset_results:
