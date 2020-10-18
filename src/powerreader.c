@@ -10,8 +10,8 @@
 #include <signal.h>
 
 #include <dal/adi_application_interface.h>
+#include <MQTTAsync.h>
 
-#include "MQTTAsync.h"
 #include "utils.h"
 #include "kbusinfo.h"
 #include "collection.h"
