@@ -224,6 +224,7 @@ reset_results:
             memset(results.validity, 0, sizeof(bool) * results.size);
         }
 
+finish_cycle:
         // request A/C values and status of L1
         outputData.t495Output.commMethod = COMM_PROCESS_DATA;
         outputData.t495Output.statusRequest = STATUS_L1;
@@ -241,7 +242,7 @@ reset_results:
         adi->WriteBytes(kbusDeviceId, taskId, 0, sizeof(tKbusOutput), (void *) &outputData);
         adi->WriteEnd(kbusDeviceId, taskId);
 
-finish_cycle:
+        // measure the runtime and sleep until the cycle time has elapsed
         clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
         runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
 
