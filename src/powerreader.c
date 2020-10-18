@@ -304,21 +304,21 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *
 }
 
 ErrorCode trigger_cycle(tApplicationDeviceInterface *adi, tDeviceId kbusDeviceId) {
-        uint32_t pushRetval = 0;
+    uint32_t pushRetval = 0;
 
-        if (adi->CallDeviceSpecificFunction("libpackbus_Push", &pushRetval) != DAL_SUCCESS) {
-            dprintf(LOGLEVEL_ERR, "CallDeviceSpecificFunction failed\n");
-            adi->CloseDevice(kbusDeviceId);
-            adi->Exit();
-            return -ERROR_DEVICE_SPECIFIC_FUNCTION_FAILED;
-        }
+    if (adi->CallDeviceSpecificFunction("libpackbus_Push", &pushRetval) != DAL_SUCCESS) {
+        dprintf(LOGLEVEL_ERR, "CallDeviceSpecificFunction failed\n");
+        adi->CloseDevice(kbusDeviceId);
+        adi->Exit();
+        return -ERROR_DEVICE_SPECIFIC_FUNCTION_FAILED;
+    }
 
-        if (pushRetval != DAL_SUCCESS) {
-            dprintf(LOGLEVEL_ERR, "Function 'libpackbus_Push' failed\n");
-            adi->CloseDevice(kbusDeviceId);
-            adi->Exit();
-            return -ERROR_LIBPACKBUS_PUSH_FAILED;
-        }
+    if (pushRetval != DAL_SUCCESS) {
+        dprintf(LOGLEVEL_ERR, "Function 'libpackbus_Push' failed\n");
+        adi->CloseDevice(kbusDeviceId);
+        adi->Exit();
+        return -ERROR_LIBPACKBUS_PUSH_FAILED;
+    }
 
     return ERROR_SUCCESS;
 }
