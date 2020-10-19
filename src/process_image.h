@@ -28,7 +28,7 @@ uint32_t read_uint32(uint8_t *buf) {
  * @retval The int32_t read from the buffer
  */
 int32_t read_int32(uint8_t *buf) {
-	return read_uint32(buf);
+    return read_uint32(buf);
 }
 
 /**
@@ -122,12 +122,12 @@ typedef struct __attribute__((packed)) {
  */
 bool results_unstable(Type495ProcessInput *input, const size_t iMax) {
     if (input->valuesUnstable) {
-	return true;
+        return true;
     }
     for (size_t i = 0; i < iMax; i++) {
-	if (input->metID[i] == 0) {
-	    return true;
-	}
+        if (input->metID[i] == 0) {
+            return true;
+        }
     }
     return false;
 }
