@@ -199,7 +199,7 @@ int main(void) {
             outputPending = false;
         }
 
-        // set timestamp, do something with the finished results and then reset them
+        // set timestamp (TODO), do something with the finished results and then reset them
         if (results.currentCount == results.size) {
             if (MQTTAsync_isConnected(client)) {
                 // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
