@@ -40,7 +40,7 @@ typedef struct ResultSet {
  *
  * @retval The converted and correctly scaled measurement value in double precision
  */
-double read_measurement_value(const UnitDescription *unit, unsigned char *buf) {
+double read_measurement_value(const UnitDescription *unit, uint8_t *buf) {
     double result;
     if (unit->isUnsigned) {
         result = (double) read_uint32(buf);
