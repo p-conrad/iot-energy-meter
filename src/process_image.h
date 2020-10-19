@@ -25,7 +25,7 @@ uint32_t read_uint32(uint8_t *buf) {
  *
  * @param[in] buf The buffer to read from
  * @param[in] offset The offset in buf to read from
- * @retval The uint32_t read from the buffer
+ * @retval The int32_t read from the buffer
  */
 int32_t read_int32(uint8_t *buf) {
 	return read_uint32(buf);
