@@ -53,19 +53,19 @@ typedef enum STATUS_REQUEST {
  * @brief A struct representing the complete process output image of type 494/495 power measurement modules
  */
 typedef struct __attribute__((packed)) {
-    unsigned char unusedByte0:7;
-    unsigned char commMethod:1;       // COMM_METHOD
+    uint8_t unusedByte0:7;
+    uint8_t commMethod:1;       // COMM_METHOD
 
-    unsigned char statusRequest:2;    // STATUS_REQUEST
-    unsigned char unusedByte1:6;
+    uint8_t statusRequest:2;    // STATUS_REQUEST
+    uint8_t unusedByte1:6;
 
-    unsigned char unusedByte2;
+    uint8_t unusedByte2;
 
-    unsigned char colID;              // COL_ID
+    uint8_t colID;              // COL_ID
 
-    unsigned char metID[4];           // MET_ID
+    uint8_t metID[4];           // MET_ID
 
-    unsigned char unusedDataWords[16];
+    uint8_t unusedDataWords[16];
 } Type495ProcessOutput;
 
 /**
@@ -80,36 +80,36 @@ typedef enum CAL_MODE {
  * @brief A struct representing the complete process input image of type 494/495 power measurement modules
  */
 typedef struct __attribute__((packed)) {
-    unsigned char l1Error:1;
-    unsigned char l2Error:1;
-    unsigned char l3Error:1;
-    unsigned char moduleError:1;
-    unsigned char unusedByte0:2;
-    unsigned char genericError:1;
-    unsigned char commMethod:1;        // COMM_METHOD
+    uint8_t l1Error:1;
+    uint8_t l2Error:1;
+    uint8_t l3Error:1;
+    uint8_t moduleError:1;
+    uint8_t unusedByte0:2;
+    uint8_t genericError:1;
+    uint8_t commMethod:1;        // COMM_METHOD
 
-    unsigned char statusRequest:2;     // STATUS_REQUEST
-    unsigned char outOfRange4:1;
-    unsigned char outOfRange3:1;
-    unsigned char outOfRange2:1;
-    unsigned char outOfRange1:1;
-    unsigned char calMode:1;           // CAL_MODE
-    unsigned char valuesUnstable:1;
+    uint8_t statusRequest:2;     // STATUS_REQUEST
+    uint8_t outOfRange4:1;
+    uint8_t outOfRange3:1;
+    uint8_t outOfRange2:1;
+    uint8_t outOfRange1:1;
+    uint8_t calMode:1;           // CAL_MODE
+    uint8_t valuesUnstable:1;
 
-    unsigned char unusedByte2:1;
-    unsigned char zcUnderrun:1;
-    unsigned char currentClipped:1;
-    unsigned char voltageClipped:1;
-    unsigned char noZeroCrossings:1;
-    unsigned char overcurrent:1;
-    unsigned char overvoltageOrRotaryFieldIncorect:1;
-    unsigned char undervoltageOrTampered:1;
+    uint8_t unusedByte2:1;
+    uint8_t zcUnderrun:1;
+    uint8_t currentClipped:1;
+    uint8_t voltageClipped:1;
+    uint8_t noZeroCrossings:1;
+    uint8_t overcurrent:1;
+    uint8_t overvoltageOrRotaryFieldIncorect:1;
+    uint8_t undervoltageOrTampered:1;
 
-    unsigned char colID;               // COL_ID
+    uint8_t colID;               // COL_ID
 
-    unsigned char metID[4];            // MET_ID
+    uint8_t metID[4];            // MET_ID
 
-    unsigned char processValue[4][4];
+    uint8_t processValue[4][4];
 } Type495ProcessInput;
 
 /**
