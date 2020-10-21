@@ -133,6 +133,7 @@ char *get_MQTT_message_string(ResultSet *results) {
     memset(resultBuf, 0, sizeof(resultBuf));
     memset(lineBuf, 0, sizeof(lineBuf));
 
+    sprintf(resultBuf, "Module Index: %u\n", results->moduleIndex);
     for (size_t i = 0; i < results->size; i++) {
         sprintf(lineBuf,
                 "%s: %.2f %s\n",

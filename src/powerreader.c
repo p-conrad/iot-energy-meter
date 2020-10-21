@@ -107,21 +107,13 @@ int main(void) {
     const size_t iMax = nrOfMeasurements >= 4 ? 4 : nrOfMeasurements;
     size_t measurementCursor = 0;
 
-    ResultSet results = {
-        .descriptions = listOfMeasurements,
-        .size = nrOfMeasurements,
-        .values = malloc(sizeof(double) * nrOfMeasurements),
-        .validity = malloc(sizeof(bool) * nrOfMeasurements),
-        .currentCount = 0
-    };
-
-    if (results.values == NULL || results.validity == NULL) {
-        dprintf(LOGLEVEL_ERR, "Memory allocation failed.");
+    ResultSet *results = allocate_results(listOfMeasurements,
+                                          nrOfMeasurements,
+                                          pmModuleCount);
+    if (results == NULL) {
+        dprintf(LOGLEVEL_ERR, "Memory allocation for the result set failed\n");
         return -ERROR_ALLOCATION_FAILED;
     }
-
-    memset(results.values, 0, sizeof(double) * nrOfMeasurements);
-    memset(results.validity, 0, sizeof(bool) * nrOfMeasurements);
 
     // set up MQTT
     MQTTAsync client = MQTT_init_and_connect();
@@ -160,16 +152,16 @@ int main(void) {
         // fill the results set
         for (size_t i = 0; i < iMax; i++) {
             size_t index;
-            UnitDescription *description = find_description_with_id(results.descriptions,
-                                                                    results.size,
+            UnitDescription *description = find_description_with_id(results[0].descriptions,
+                                                                    results[0].size,
                                                                     t495Inputs[0]->metID[i],
                                                                     &index);
             if (description == NULL) continue;
 
-            results.values[index] = read_measurement_value(description, t495Inputs[0]->processValue[i]);
-            if (!results.validity[index]) {
-                results.validity[index] = true;
-                results.currentCount += 1;
+            results[0].values[index] = read_measurement_value(description, t495Inputs[0]->processValue[i]);
+            if (!results[0].validity[index]) {
+                results[0].validity[index] = true;
+                results[0].currentCount += 1;
             }
         }
 
@@ -179,7 +171,7 @@ int main(void) {
             last_t = new_t;
         }
 
-        if (outputPending && results.currentCount == results.size) {
+        if (outputPending && results[0].currentCount == results[0].size) {
             // show process data
             printf("\nErrors (generic, L1, L2, L3): %u %u %u %u",
                    t495Inputs[0]->genericError,
@@ -187,11 +179,11 @@ int main(void) {
                    t495Inputs[0]->l2Error,
                    t495Inputs[0]->l3Error
                   );
-            for (size_t i = 0; i < results.size; i++) {
+            for (size_t i = 0; i < results[0].size; i++) {
                 printf("\n%s: %.2f%s",
-                       results.descriptions[i]->description,
-                       results.values[i],
-                       results.descriptions[i]->unit
+                       results[0].descriptions[i]->description,
+                       results[0].values[i],
+                       results[0].descriptions[i]->unit
                       );
             }
             printf("\nLast cycle: %luus (%luus remaining)", runtimeNs / 1000, remainingUs);
@@ -200,16 +192,16 @@ int main(void) {
         }
 
         // set timestamp (TODO), do something with the finished results and then reset them
-        if (results.currentCount == results.size) {
+        if (results[0].currentCount == results[0].size) {
             if (MQTTAsync_isConnected(client)) {
                 // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
-                char *messageStr = get_MQTT_message_string(&results);
+                char *messageStr = get_MQTT_message_string(&results[0]);
                 if (messageStr == NULL) {
                     dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string\n");
                     goto reset_results;
                 }
                 MQTTAsync_message message = MQTTAsync_message_initializer;
-                message.payload = get_MQTT_message_string(&results);
+                message.payload = messageStr;
                 message.payloadlen = strlen(message.payload);
                 message.qos = MQTT_QOS_DEFAULT;
                 message.retained = 0;
@@ -220,8 +212,8 @@ int main(void) {
                 }
             }
 reset_results:
-            results.currentCount = 0;
-            memset(results.validity, 0, sizeof(bool) * results.size);
+            results[0].currentCount = 0;
+            memset(results[0].validity, 0, sizeof(bool) * results[0].size);
         }
 
 finish_cycle:

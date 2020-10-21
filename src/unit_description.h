@@ -3,10 +3,12 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "collection.h"
 #include "process_image.h"
+#include "utils.h"
 
 /**
  * @brief A struct containing all necessary information for querying a
@@ -27,10 +29,45 @@ typedef struct UnitDescription {
 typedef struct ResultSet {
     const UnitDescription **descriptions;
     const size_t size;
+    const size_t moduleIndex;       /* index of the power measurement module on the bus */
     double *values;                 /* result values at the same positions as descriptions */
     bool *validity;                 /* used to determine whether a certain value has already been filled */
     size_t currentCount;            /* number of valid entries to quickly know whether the set is finshed */
 } ResultSet;
+
+
+/**
+ * @brief Allocates a list of multiple ResultSets
+ *
+ * @param[in] descriptions The list of UnitDescriptions to associate with the ResultSets
+ * @param[in] descSize The length of the UnitDescription list
+ * @param[in] The number of modules (e.g. the resulting size) to allocate the ResultSets for
+ * @retval A pointer to the allocated ResultSets, or NULL on alloation failure
+ */
+ResultSet *allocate_results(const UnitDescription **descriptions, const size_t descSize, const size_t moduleCount) {
+    ResultSet *result = calloc(sizeof(ResultSet), moduleCount);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < moduleCount; i++) {
+        result[i].descriptions = descriptions;
+        *(size_t*)&result[i].size = descSize;
+        *(size_t*)&result[i].moduleIndex = i;
+        result[i].values = calloc(sizeof(double), descSize);
+        result[i].validity = calloc(sizeof(bool), descSize);
+        result[i].currentCount = 0;
+
+        if (result[i].values == NULL || result[i].validity == NULL) {
+            // strictly speaking we would have to clean up all the allocated memory here,
+            // but the program is supposed to terminate here anyway, so we save us the effort
+            return NULL;
+        }
+    }
+
+    return result;
+}
 
 /**
  * @brief Reads and converts a measurement value according to its unit description.
