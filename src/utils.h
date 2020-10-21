@@ -1,8 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <stdlib.h>
-
 /**
  * @brief Definition of possible error codes
  */
@@ -64,7 +62,7 @@ extern Loglevel loglevel;
     if (result != ERROR_SUCCESS) {          \
         adi->CloseDevice(kbusDeviceId);     \
         adi->Exit();                        \
-        exit(result);                       \
+        return result;                      \
     }                                       \
 } while (0)
 
