@@ -132,6 +132,10 @@ int main(void) {
         exit_on_error(trigger_cycle(adi, kbusDeviceId));
         adi->WatchdogTrigger();
 
+        dprintf(LOGLEVEL_DEBUG,
+                "Time required for the last cycle: %luus (%luus remaining)\n",
+                runtimeNs / 1000, remainingUs);
+
         // read inputs
         adi->ReadStart(kbusDeviceId, taskId);
         adi->ReadBytes(kbusDeviceId, taskId, 0, inputDataSize, inputData);
