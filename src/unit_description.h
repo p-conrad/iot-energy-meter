@@ -31,6 +31,7 @@ typedef struct ResultSet {
     const size_t size;
     const size_t moduleIndex;       /* index of the power measurement module on the bus */
     double *values;                 /* result values at the same positions as descriptions */
+    struct timespec timestamp;      /* the timestamp when the set was completed */
     bool *validity;                 /* used to determine whether a certain value has already been filled */
     size_t currentCount;            /* number of valid entries to quickly know whether the set is finshed */
 } ResultSet;

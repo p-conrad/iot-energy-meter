@@ -189,8 +189,9 @@ int main(void) {
             outputPending = false;
         }
 
-        // set timestamp (TODO), do something with the finished results and then reset them
+        // send the finished results and then reset them
         if (results[0].currentCount == results[0].size) {
+            clock_gettime(CLOCK_TAI, &results[0].timestamp);
             if (MQTTAsync_isConnected(client)) {
                 // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
                 char *messageStr = get_MQTT_message_string(&results[0]);
@@ -212,6 +213,7 @@ int main(void) {
 reset_results:
             results[0].currentCount = 0;
             memset(results[0].validity, 0, sizeof(bool) * results[0].size);
+            memset(&results[0].timestamp, 0, sizeof(struct timespec));
         }
 
 finish_cycle:
