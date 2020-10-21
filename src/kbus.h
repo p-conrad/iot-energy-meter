@@ -36,11 +36,11 @@ ErrorCode set_application_state(tApplicationDeviceInterface *adi,
     }
 
     if (adi->ApplicationStateChanged(event) != DAL_SUCCESS) {
-        dprintf(LOGLEVEL_ERR, "Failed to set the application state to '%s'.\n", state);
+        dprintf(LOGLEVEL_ERR, "Failed to set the application state to '%s'\n", state);
         return -ERROR_STATE_CHANGE_FAILED;
     }
 
-    dprintf(LOGLEVEL_INFO, "Application state set to '%s'.\n", state);
+    dprintf(LOGLEVEL_INFO, "Application state set to '%s'\n", state);
     return ERROR_SUCCESS;
 }
 
@@ -55,7 +55,7 @@ ErrorCode set_application_state(tApplicationDeviceInterface *adi,
 ErrorCode get_process_data_size(size_t *inputSize, size_t *outputSize) {
     tldkc_KbusInfo_Status status;
     if (ldkc_KbusInfo_GetStatus(&status) == KbusInfo_Failed) {
-        dprintf(LOGLEVEL_ERR, "Failed to retrieve the KBus status.\n");
+        dprintf(LOGLEVEL_ERR, "Failed to retrieve the KBus status\n");
         ldkc_KbusInfo_Destroy();
         return -ERROR_KBUSINFO_STATUS_FAILED;
     }
@@ -96,7 +96,7 @@ ErrorCode find_and_initialize_kbus(tApplicationDeviceInterface *adi, tDeviceId *
 
     s_param.sched_priority = KBUS_MAINPRIO;
     sched_setscheduler(0, SCHED_FIFO, &s_param);
-    dprintf(LOGLEVEL_NOTICE, "Scheduling priority set to %d.\n", KBUS_MAINPRIO);
+    dprintf(LOGLEVEL_NOTICE, "Scheduling priority set to %d\n", KBUS_MAINPRIO);
 
     *kbusDeviceId = deviceList[nrKbusFound].DeviceId;
     if (adi->OpenDevice(*kbusDeviceId) != DAL_SUCCESS) {

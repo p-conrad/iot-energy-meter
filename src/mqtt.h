@@ -12,7 +12,7 @@
 
 /* MQTT callbacks */
 void on_connect_success(void *context, MQTTAsync_successData *response) {
-    dprintf(LOGLEVEL_INFO, "Connection to the MQTT broker successful.\n");
+    dprintf(LOGLEVEL_INFO, "Connection to the MQTT broker successful\n");
 }
 
 void on_connect_failure(void *context, MQTTAsync_failureData *response) {
@@ -22,7 +22,7 @@ void on_connect_failure(void *context, MQTTAsync_failureData *response) {
 }
 
 void on_disconnect(void *context, MQTTAsync_successData *response) {
-    dprintf(LOGLEVEL_INFO, "Successfully disconnected.\n");
+    dprintf(LOGLEVEL_INFO, "Successfully disconnected\n");
 }
 
 void on_disconnect_failure(void *context, MQTTAsync_failureData *response) {

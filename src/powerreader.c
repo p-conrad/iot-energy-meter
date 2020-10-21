@@ -61,7 +61,7 @@ int main(void) {
     exit_on_error(set_application_state(adi, event));
 
     if (ldkc_KbusInfo_Create() == KbusInfo_Failed) {
-        printf("Failed to create KBus info.\n");
+        printf("Failed to create KBus info\n");
         adi->CloseDevice(kbusDeviceId);
         adi->Exit();
         return -ERROR_KBUSINFO_CREATE_FAILED;
@@ -195,7 +195,7 @@ int main(void) {
                 // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
                 char *messageStr = get_MQTT_message_string(&results);
                 if (messageStr == NULL) {
-                    dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string.\n");
+                    dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string\n");
                     goto reset_results;
                 }
                 MQTTAsync_message message = MQTTAsync_message_initializer;
