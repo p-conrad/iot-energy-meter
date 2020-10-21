@@ -71,7 +71,7 @@ int main(void) {
     void *inputData = malloc(inputDataSize);
     void *outputData = malloc(outputDataSize);
     if (inputData == NULL || outputData == NULL) {
-        dprintf(LOGLEVEL_ERR, "Failed to allocate memory for the process images");
+        dprintf(LOGLEVEL_ERR, "Failed to allocate memory for the process images\n");
         return -ERROR_ALLOCATION_FAILED;
     }
     memset(inputData, 0, inputDataSize);
@@ -102,8 +102,8 @@ int main(void) {
         &ReactivePowerN3
     };
     const size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
-    // The module can provide up to 4 measurements. If our list is shorter than that, instead of looping around we
-    // simply don't fill the leftover slots.
+    // The module can provide up to 4 measurements. If our list is shorter than that,
+    // instead of looping around we simply don't fill the leftover slots.
     const size_t iMax = nrOfMeasurements >= 4 ? 4 : nrOfMeasurements;
     size_t measurementCursor = 0;
 
@@ -132,9 +132,7 @@ int main(void) {
     time_t last_t = 0, new_t;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
-
         exit_on_error(trigger_cycle(adi, kbusDeviceId));
-
         adi->WatchdogTrigger();
 
         // 1s tick for test output
