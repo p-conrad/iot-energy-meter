@@ -10,7 +10,6 @@
 
 #include "utils.h"
 #include "kbus.h"
-#include "kbusinfo.h"
 #include "collection.h"
 #include "unit_description.h"
 #include "mqtt.h"
@@ -127,106 +126,82 @@ int main(void) {
     exit_on_error(set_application_state(adi, event));
 
     struct timespec startTime, finishTime;
-    bool outputPending = false;
     unsigned long runtimeNs = 0, remainingUs = 0;
-    time_t last_t = 0, new_t;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
         exit_on_error(trigger_cycle(adi, kbusDeviceId));
         adi->WatchdogTrigger();
-
-        // 1s tick for test output
-        new_t = time(NULL);
 
         // read inputs
         adi->ReadStart(kbusDeviceId, taskId);
         adi->ReadBytes(kbusDeviceId, taskId, 0, inputDataSize, inputData);
         adi->ReadEnd(kbusDeviceId, taskId);
 
-        if (results_unstable(t495Inputs[0], iMax)) {
-            goto finish_cycle;
-        }
-
-        // fill the results set
-        for (size_t i = 0; i < iMax; i++) {
-            size_t index;
-            UnitDescription *description = find_description_with_id(results[0].descriptions,
-                                                                    results[0].size,
-                                                                    t495Inputs[0]->metID[i],
-                                                                    &index);
-            if (description == NULL) continue;
-
-            results[0].values[index] = read_measurement_value(description, t495Inputs[0]->processValue[i]);
-            if (!results[0].validity[index]) {
-                results[0].validity[index] = true;
-                results[0].currentCount += 1;
+        // iterate through the process data of each module and process the data
+        for (size_t modIndex = 0; modIndex < pmModuleCount; modIndex++) {
+            if (results_unstable(t495Inputs[modIndex], iMax)) {
+                continue;
             }
-        }
 
-        // output results (roughly) every second when our results are complete
-        if (new_t != last_t) {
-            outputPending = true;
-            last_t = new_t;
-        }
+            // fill the results set
+            for (size_t i = 0; i < iMax; i++) {
+                size_t index;
+                UnitDescription *description = find_description_with_id(results[modIndex].descriptions,
+                                                                        results[modIndex].size,
+                                                                        t495Inputs[modIndex]->metID[i],
+                                                                        &index);
+                if (description == NULL) continue;
 
-        if (outputPending && results[0].currentCount == results[0].size) {
-            // show process data
-            printf("\nErrors (generic, L1, L2, L3): %u %u %u %u",
-                   t495Inputs[0]->genericError,
-                   t495Inputs[0]->l1Error,
-                   t495Inputs[0]->l2Error,
-                   t495Inputs[0]->l3Error
-                  );
-            for (size_t i = 0; i < results[0].size; i++) {
-                printf("\n%s: %.2f%s",
-                       results[0].descriptions[i]->description,
-                       results[0].values[i],
-                       results[0].descriptions[i]->unit
-                      );
-            }
-            printf("\nLast cycle: %luus (%luus remaining)", runtimeNs / 1000, remainingUs);
-            printf("\n");
-            outputPending = false;
-        }
-
-        // send the finished results and then reset them
-        if (results[0].currentCount == results[0].size) {
-            clock_gettime(CLOCK_TAI, &results[0].timestamp);
-            if (MQTTAsync_isConnected(client)) {
-                // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
-                char *messageStr = get_MQTT_message_string(&results[0]);
-                if (messageStr == NULL) {
-                    dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string\n");
-                    goto reset_results;
-                }
-                MQTTAsync_message message = MQTTAsync_message_initializer;
-                message.payload = messageStr;
-                message.payloadlen = strlen(message.payload);
-                message.qos = MQTT_QOS_DEFAULT;
-                message.retained = 0;
-
-                int pubResult;
-                if ((pubResult = MQTTAsync_sendMessage(client, MQTT_TOPIC, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
-                    printf("Failed to start sendMessage, return code %d\n", pubResult);
+                results[modIndex].values[index] = read_measurement_value(description,
+                                                                         t495Inputs[modIndex]->processValue[i]);
+                if (!results[modIndex].validity[index]) {
+                    results[modIndex].validity[index] = true;
+                    results[modIndex].currentCount += 1;
                 }
             }
+
+            // send the finished results and then reset them
+            if (results[modIndex].currentCount == results[modIndex].size) {
+                clock_gettime(CLOCK_TAI, &results[modIndex].timestamp);
+                if (MQTTAsync_isConnected(client)) {
+                    // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
+                    char *messageStr = get_MQTT_message_string(&results[modIndex]);
+                    if (messageStr == NULL) {
+                        dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string\n");
+                        goto reset_results;
+                    }
+                    MQTTAsync_message message = MQTTAsync_message_initializer;
+                    message.payload = messageStr;
+                    message.payloadlen = strlen(message.payload);
+                    message.qos = MQTT_QOS_DEFAULT;
+                    message.retained = 0;
+
+                    int pubResult;
+                    if ((pubResult = MQTTAsync_sendMessage(client, MQTT_TOPIC, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
+                        printf("Failed to start sendMessage, return code %d\n", pubResult);
+                    }
+                }
 reset_results:
-            results[0].currentCount = 0;
-            memset(results[0].validity, 0, sizeof(bool) * results[0].size);
-            memset(&results[0].timestamp, 0, sizeof(struct timespec));
+                results[modIndex].currentCount = 0;
+                memset(results[modIndex].validity, 0, sizeof(bool) * results[modIndex].size);
+                memset(&results[modIndex].timestamp, 0, sizeof(struct timespec));
+            }
+
+            // request A/C values and status of L1
+            t495Outputs[modIndex]->commMethod = COMM_PROCESS_DATA;
+            t495Outputs[modIndex]->statusRequest = STATUS_L1;
+            t495Outputs[modIndex]->colID = AC_MEASUREMENT;
         }
 
-finish_cycle:
-        // request A/C values and status of L1
-        t495Outputs[0]->commMethod = COMM_PROCESS_DATA;
-        t495Outputs[0]->statusRequest = STATUS_L1;
-        t495Outputs[0]->colID = AC_MEASUREMENT;
-
+        // request the next batch of measurements - this needs to be done in a separate loop to
+        // ensure we request the same values from each module
         for (size_t i = 0; i < iMax; i++, measurementCursor++) {
             if (measurementCursor == nrOfMeasurements) {
                 measurementCursor = 0;
             }
-            t495Outputs[0]->metID[i] = listOfMeasurements[measurementCursor]->metID;
+            for (size_t modIndex = 0; modIndex < pmModuleCount; modIndex++) {
+                t495Outputs[modIndex]->metID[i] = listOfMeasurements[measurementCursor]->metID;
+            }
         }
 
         // write outputs
