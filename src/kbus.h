@@ -5,7 +5,9 @@
 
 #include <dal/adi_application_interface.h>
 #include <ldkc_kbus_information.h>
+#include <ldkc_kbus_register_communication.h>
 
+#include "process_image.h"
 #include "utils.h"
 
 #define KBUS_MAINPRIO 40
@@ -62,6 +64,77 @@ ErrorCode get_process_data_size(size_t *inputSize, size_t *outputSize) {
 
     *inputSize = (status.BitCountAnalogInput / 8) + (status.BitCountDigitalInput / 8 + 1);
     *outputSize = (status.BitCountAnalogOutput / 8) + (status.BitCountDigitalOutput / 8 + 1);
+
+    return ERROR_SUCCESS;
+}
+
+/**
+ * @brief Finds the process data addresses of all power measurement modules
+ *
+ * @param[in] inputData A pointer to the allocated input process data
+ * @param[in] outputData A pointer to the allocated output process data
+ * @param[out] count The number of power measurement modules found
+ * @param[out] t495Inputs A newly allocated array of pointers to all Type 495/494 process input data
+ * @param[out] t495Outputs A newly allocated array of pointers to all Type 495/494 process output data
+ * @retval ERROR_SUCCESS (0) on success, a different error code otherwise
+ */
+ErrorCode get_pm_data_addresses(const void *inputData,
+                                const void *outputData,
+                                size_t *count,
+                                Type495ProcessInput ***t495Inputs,
+                                Type495ProcessOutput ***t495Outputs) {
+    size_t terminalCount;
+    uint16_t terminals[LDKC_KBUS_TERMINAL_COUNT_MAX];
+    tldkc_KbusInfo_TerminalInfo terminalDescription[LDKC_KBUS_TERMINAL_COUNT_MAX];
+
+    int inputOffsets[LDKC_KBUS_TERMINAL_COUNT_MAX];
+    int outputOffsets[LDKC_KBUS_TERMINAL_COUNT_MAX];
+    size_t moduleCount = 0;
+
+    if (ldkc_KbusInfo_GetTerminalInfo(OS_ARRAY_SIZE(terminalDescription),
+                                      terminalDescription, &terminalCount) == KbusInfo_Failed) {
+        dprintf(LOGLEVEL_ERR, "Failed to get the terminal info\n");
+        ldkc_KbusInfo_Destroy();
+        return -ERROR_KBUSINFO_TERMINAL_INFO_FAILED;
+    }
+
+    if (ldkc_KbusInfo_GetTerminalList(OS_ARRAY_SIZE(terminals), terminals, NULL) == KbusInfo_Failed) {
+        dprintf(LOGLEVEL_ERR, "Failed to get the terminal list\n");
+        ldkc_KbusInfo_Destroy();
+        return -ERROR_KBUSINFO_TERMINAL_LIST_FAILED;
+    }
+
+    for (size_t i = 0; i < terminalCount; i++) {
+        if (terminals[i] == 494 || terminals[i] == 495) {
+            inputOffsets[moduleCount] = terminalDescription[i].OffsetInput_bits / 8;
+            outputOffsets[moduleCount] = terminalDescription[i].OffsetOutput_bits / 8;
+            moduleCount++;
+        } else if (terminals[i] == 493) {
+            dprintf(LOGLEVEL_WARNING,
+                    "Found a 750-493 power measurement module. \
+                    This type is not supported and will be ignored\n");
+        }
+    }
+
+    if (moduleCount == 0) {
+        dprintf(LOGLEVEL_ERR, "No power measurement modules found\n");
+        return -ERROR_NO_MODULES;
+    }
+
+    dprintf(LOGLEVEL_INFO, "Found %u power measurement modules\n", moduleCount);
+
+    *t495Inputs = malloc(sizeof(Type495ProcessInput*) * moduleCount);
+    *t495Outputs = malloc(sizeof(Type495ProcessOutput*) * moduleCount);
+    if (*t495Inputs == NULL || *t495Outputs == NULL) {
+        dprintf(LOGLEVEL_ERR, "Failed to allocate memory for the module pointer addresses\n");
+        return -ERROR_ALLOCATION_FAILED;
+    }
+
+    for (size_t i = 0; i < moduleCount; i++) {
+        *t495Inputs[i] = (void *)inputData + inputOffsets[i];
+        *t495Outputs[i] = (void *)outputData + outputOffsets[i];
+    }
+    *count = moduleCount;
 
     return ERROR_SUCCESS;
 }

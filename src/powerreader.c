@@ -66,7 +66,6 @@ int main(void) {
     size_t inputDataSize, outputDataSize;
     exit_on_error(get_process_data_size(&inputDataSize, &outputDataSize));
     dprintf(LOGLEVEL_INFO, "Input/output data sizes: %u %u\n", inputDataSize, outputDataSize);
-    ldkc_KbusInfo_Destroy();
 
     // allocate and clear process image memory
     void *inputData = malloc(inputDataSize);
@@ -78,10 +77,14 @@ int main(void) {
     memset(inputData, 0, inputDataSize);
     memset(outputData, 0, outputDataSize);
 
-    // have the 495 process image point to the beginning of the process images
-    // (this is a temporary solution for testing)
-    Type495ProcessInput *t495Input = inputData;
-    Type495ProcessOutput *t495Output = outputData;
+    // get the count and process data addresses of all power measurement modules
+    size_t pmModuleCount;
+    Type495ProcessInput **t495Inputs;
+    Type495ProcessOutput **t495Outputs;
+    exit_on_error(get_pm_data_addresses(inputData, outputData, &pmModuleCount, &t495Inputs, &t495Outputs));
+
+    // finish using the KBus DBus interface
+    ldkc_KbusInfo_Destroy();
 
     // register signal handler
     signal(SIGINT, sig_handler);
@@ -150,7 +153,7 @@ int main(void) {
         adi->ReadBytes(kbusDeviceId, taskId, 0, inputDataSize, inputData);
         adi->ReadEnd(kbusDeviceId, taskId);
 
-        if (results_unstable(t495Input, iMax)) {
+        if (results_unstable(t495Inputs[0], iMax)) {
             goto finish_cycle;
         }
 
@@ -159,11 +162,11 @@ int main(void) {
             size_t index;
             UnitDescription *description = find_description_with_id(results.descriptions,
                                                                     results.size,
-                                                                    t495Input->metID[i],
+                                                                    t495Inputs[0]->metID[i],
                                                                     &index);
             if (description == NULL) continue;
 
-            results.values[index] = read_measurement_value(description, t495Input->processValue[i]);
+            results.values[index] = read_measurement_value(description, t495Inputs[0]->processValue[i]);
             if (!results.validity[index]) {
                 results.validity[index] = true;
                 results.currentCount += 1;
@@ -179,10 +182,10 @@ int main(void) {
         if (outputPending && results.currentCount == results.size) {
             // show process data
             printf("\nErrors (generic, L1, L2, L3): %u %u %u %u",
-                   t495Input->genericError,
-                   t495Input->l1Error,
-                   t495Input->l2Error,
-                   t495Input->l3Error
+                   t495Inputs[0]->genericError,
+                   t495Inputs[0]->l1Error,
+                   t495Inputs[0]->l2Error,
+                   t495Inputs[0]->l3Error
                   );
             for (size_t i = 0; i < results.size; i++) {
                 printf("\n%s: %.2f%s",
@@ -223,15 +226,15 @@ reset_results:
 
 finish_cycle:
         // request A/C values and status of L1
-        t495Output->commMethod = COMM_PROCESS_DATA;
-        t495Output->statusRequest = STATUS_L1;
-        t495Output->colID = AC_MEASUREMENT;
+        t495Outputs[0]->commMethod = COMM_PROCESS_DATA;
+        t495Outputs[0]->statusRequest = STATUS_L1;
+        t495Outputs[0]->colID = AC_MEASUREMENT;
 
         for (size_t i = 0; i < iMax; i++, measurementCursor++) {
             if (measurementCursor == nrOfMeasurements) {
                 measurementCursor = 0;
             }
-            t495Output->metID[i] = listOfMeasurements[measurementCursor]->metID;
+            t495Outputs[0]->metID[i] = listOfMeasurements[measurementCursor]->metID;
         }
 
         // write outputs
