@@ -42,17 +42,35 @@ int main(void) {
     tDeviceId kbusDeviceId;
     tApplicationDeviceInterface *adi;
     uint32_t taskId = 0;
+    tApplicationStateChangedEvent event;
 
     // process data
     tKbusInput inputData;
     tKbusOutput outputData;
 
-    // generic vars
-    time_t last_t = 0, new_t;
-
     printf("**************************************************\n");
     printf("***         WINNER Power Measurement           ***\n");
     printf("**************************************************\n");
+
+    // initialize the ADI and find the process data size
+    adi = adi_GetApplicationInterface();
+    adi->Init();
+    exit_on_error(find_and_initialize_kbus(adi, &kbusDeviceId));
+
+    event.State = ApplicationState_Unconfigured;
+    exit_on_error(set_application_state(adi, event));
+
+    if (ldkc_KbusInfo_Create() == KbusInfo_Failed) {
+        printf("Failed to create KBus info.\n");
+        adi->CloseDevice(kbusDeviceId);
+        adi->Exit();
+        return -ERROR_KBUSINFO_CREATE_FAILED;
+    }
+
+    size_t inputDataSize, outputDataSize;
+    exit_on_error(get_process_data_size(&inputDataSize, &outputDataSize));
+    dprintf(LOGLEVEL_INFO, "Input/output data sizes: %u %u\n", inputDataSize, outputDataSize);
+    ldkc_KbusInfo_Destroy();
 
     // register signal handler
     signal(SIGINT, sig_handler);
@@ -95,14 +113,6 @@ int main(void) {
     memset(results.values, 0, sizeof(double) * nrOfMeasurements);
     memset(results.validity, 0, sizeof(bool) * nrOfMeasurements);
 
-    // initialize the ADI
-    adi = adi_GetApplicationInterface();
-    adi->Init();
-    ErrorCode initResult = find_and_initialize_kbus(adi, &kbusDeviceId);
-    if (initResult != ERROR_SUCCESS) {
-        return initResult;
-    }
-
     // set up MQTT
     MQTTAsync client = MQTT_init_and_connect();
     MQTTAsync_responseOptions responseOpts = MQTTAsync_responseOptions_initializer;
@@ -110,16 +120,18 @@ int main(void) {
     responseOpts.onFailure = on_send_failure;
     responseOpts.context = client;
 
+    // set the application state to 'running' and start the main loop
+    event.State = ApplicationState_Running;
+    exit_on_error(set_application_state(adi, event));
+
     struct timespec startTime, finishTime;
     bool outputPending = false;
     unsigned long runtimeNs = 0, remainingUs = 0;
+    time_t last_t = 0, new_t;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
 
-        ErrorCode triggerResult = trigger_cycle(adi, kbusDeviceId);
-        if (triggerResult != ERROR_SUCCESS) {
-            return triggerResult;
-        }
+        exit_on_error(trigger_cycle(adi, kbusDeviceId));
 
         adi->WatchdogTrigger();
 

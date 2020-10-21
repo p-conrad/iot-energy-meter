@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdlib.h>
+
 /**
  * @brief Definition of possible error codes
  */
@@ -11,7 +13,9 @@ typedef enum ErrorCode {
     ERROR_STATE_CHANGE_FAILED,
     ERROR_DEVICE_SPECIFIC_FUNCTION_FAILED,
     ERROR_LIBPACKBUS_PUSH_FAILED,
-    ERROR_ALLOCATION_FAILED
+    ERROR_ALLOCATION_FAILED,
+    ERROR_KBUSINFO_CREATE_FAILED,
+    ERROR_KBUSINFO_STATUS_FAILED,
 } ErrorCode;
 
 /**
@@ -44,5 +48,24 @@ extern Loglevel loglevel;
         if (loglevel >= printlevel)                   \
             fprintf(stderr, format, ##__VA_ARGS__); \
 } while(0)
+
+/**
+ * @brief Calls a function and exits the program in case of an error.
+ *
+ * Most of the calls to the ADI/DAL interface can potentially result in an error,
+ * the handling of which always follows the same pattern of first closing the device,
+ * then exiting the ADI and closing the program. This macro helps removing some
+ * of the redundancy.
+ *
+ * @param[in] call A function call returning an ErrorEcode
+ */
+#define exit_on_error(call) do {            \
+    ErrorCode result = call;                \
+    if (result != ERROR_SUCCESS) {          \
+        adi->CloseDevice(kbusDeviceId);     \
+        adi->Exit();                        \
+        exit(result);                       \
+    }                                       \
+} while (0)
 
 #endif
