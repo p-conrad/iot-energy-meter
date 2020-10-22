@@ -1,0 +1,8 @@
+syntax = "proto3";
+message ResultSetMsg {
+	uint32 index = 1;
+	double timestamp = 2;
+	repeated double voltage = 3 [packed=true];
+	repeated double effective_power = 4 [packed=true];
+	repeated double reactive_power = 5 [packed=true];
+}

@@ -168,15 +168,16 @@ int main(void) {
             if (results[modIndex].currentCount == results[modIndex].size) {
                 clock_gettime(CLOCK_TAI, &results[modIndex].timestamp);
                 if (MQTTAsync_isConnected(client)) {
-                    // Paho will handle the deallocation of messageStr for us, so we don't have to worry about it
-                    char *messageStr = get_MQTT_message_string(&results[modIndex]);
-                    if (messageStr == NULL) {
-                        dprintf(LOGLEVEL_ERR, "Failed to allocate the MQTT result string\n");
+                    // Paho will handle the deallocation of msg for us, so we don't have to worry about it
+                    size_t msgLength;
+                    void *msg = get_MQTT_protobuf_message(&results[modIndex], &msgLength);
+                    if (msg == NULL) {
+                        dprintf(LOGLEVEL_ERR, "Failed to create the MQTT message\n");
                         goto reset_results;
                     }
                     MQTTAsync_message message = MQTTAsync_message_initializer;
-                    message.payload = messageStr;
-                    message.payloadlen = strlen(message.payload);
+                    message.payload = msg;
+                    message.payloadlen = msgLength;
                     message.qos = MQTT_QOS_DEFAULT;
                     message.retained = 0;
 

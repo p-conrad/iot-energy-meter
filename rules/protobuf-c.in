@@ -1,0 +1,8 @@
+## SECTION=system_libraries
+
+config PROTOBUF_C
+	tristate
+	prompt "protobuf C library"
+	select PROTOBUF
+	help
+	  Install the C library for Protocol Buffers

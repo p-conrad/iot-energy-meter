@@ -1,14 +1,17 @@
 #ifndef MQTT_H
 #define MQTT_H
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "MQTTAsync.h"
+#include "collection.h"
 #include "unit_description.h"
 #include "utils.h"
+#include "protobuf/result_set.pb-c.h"
 
 /* MQTT callbacks */
 void on_connect_success(void *context, MQTTAsync_successData *response) {
@@ -152,6 +155,67 @@ char *get_MQTT_message_string(ResultSet *results) {
     }
     strcpy(result, resultBuf);
     return result;
+}
+
+/**
+ * @brief Packs a given ResultSet into a ResultSetMsg Protocol buffer
+ *
+ * This function creates packed protocol buffer from a ResultSet, ready to be sent via MQTT.
+ * It follows the definition of ResultSetMsg in protobuf/result_set.proto which currently
+ * contains fields for the voltage, effective power and reactive power, and assumes we receive
+ * three measurements of each one. Other measurements are ignored. If there are additional
+ * measurements to be taken, the .proto file and this function need to be updated in tandem
+ * (this is the price to pay for the small memory footprint).
+ * 
+ * @param[in] results A pointer to the completed ResultSet instance
+ * @param[out] size The size of the resulting message
+ * @retval A pointer to the buffer containing the packed message
+ */
+void *get_MQTT_protobuf_message(ResultSet *results, size_t *size) {
+    ResultSetMsg msg = RESULT_SET_MSG__INIT;
+    void *buf;
+    double voltage[3];
+    double effective_power[3];
+    double reactive_power[3];
+
+    msg.index = results->moduleIndex;
+    double usecs = round(results->timestamp.tv_nsec / 1E6) / 1000;
+    msg.timestamp = results->timestamp.tv_sec + usecs;
+
+    // Fill the results. We trust that the values for each phase are in correct order
+    // and there are no duplicate entries, otherwise this would need to be a lot more complicated
+    size_t v_i = 0, ep_i = 0, rp_i = 0;
+    for (size_t i = 0; i <= results->size; i++) {
+        MET_ID_AC id = results->descriptions[i]->metID;
+        if (id == VOLTAGE_RMS_L1N || id == VOLTAGE_RMS_L2N || id == VOLTAGE_RMS_L3N) {
+            voltage[v_i] = results->values[i];
+            v_i++;
+        }
+        else if (id == POWER_EFFECTIVE_L1 || id == POWER_EFFECTIVE_L2 || id == POWER_EFFECTIVE_L3) {
+            effective_power[ep_i] = results->values[i];
+            ep_i++;
+        }
+        else if (id == POWER_REACTIVE_L1 || id == POWER_REACTIVE_L2 || id == POWER_REACTIVE_L3) {
+            reactive_power[rp_i] = results->values[i];
+            rp_i++;
+        }
+    }
+
+    msg.n_voltage = 3;
+    msg.n_effective_power = 3;
+    msg.n_reactive_power = 3;
+    msg.voltage = voltage;
+    msg.effective_power = effective_power;
+    msg.reactive_power = reactive_power;
+
+    *size = result_set_msg__get_packed_size(&msg);
+    buf = malloc(*size);
+    if (buf == NULL) {
+        return NULL;
+    }
+
+    result_set_msg__pack(&msg, buf);
+    return buf;
 }
 
 #endif

@@ -10,17 +10,19 @@ CFLAGS += -I$(SYSROOT)/usr/include/dal/
 #------------------------------------------------------------------------------
 # Linker flags
 #------------------------------------------------------------------------------
-LDFLAGS += -ldal -llibloader -lpthread -lffi -lrt -ldbus-glib-1 -lglib-2.0 
-LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon -lpaho-mqtt3as
+LDFLAGS += -ldal -llibloader -lpthread -lffi -lrt -ldbus-glib-1 -lglib-2.0 -lm
+LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon -lpaho-mqtt3as -lprotobuf-c
 
+OBJECTS := powerreader.o protobuf/result_set.pb-c.o
+EXECUTABLE := powerreader
 
 all: powerreader
 
-powerreader: powerreader.o
-	$(CC) $< -o $@ $(LDFLAGS)
+powerreader: $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(EXECUTABLE) $(LDFLAGS)
 
 clean:
-	-rm -f powerreader powerreader.o
+	$(RM) $(OBJECTS) $(EXECUTABLE)
 
 install:
 

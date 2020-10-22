@@ -6,7 +6,7 @@ PROJECT_NAME="winner-power-reader"
 PKG_NAME="${PROJECT_NAME}_0.1_armhf.ipk"
 PKG_PATH="platform-wago-pfcXXX/packages/${PKG_NAME}"
 
-cp -f src/* "${PTX_PATH}/src/${PROJECT_NAME}"
+cp -fr src/* "${PTX_PATH}/src/${PROJECT_NAME}"
 cd $PTX_PATH
 ptxdist clean $PROJECT_NAME
 set -o pipefail
