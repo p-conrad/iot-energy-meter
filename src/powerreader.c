@@ -126,7 +126,7 @@ int main(void) {
     exit_on_error(set_application_state(adi, event));
 
     struct timespec startTime, finishTime;
-    unsigned long runtimeNs = 0, remainingUs = 0;
+    unsigned long runtimeUs = 0, remainingUs = 0;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
         exit_on_error(trigger_cycle(adi, kbusDeviceId));
@@ -134,7 +134,12 @@ int main(void) {
 
         dprintf(LOGLEVEL_DEBUG,
                 "Time required for the last cycle: %luus (%luus remaining)\n",
-                runtimeNs / 1000, remainingUs);
+                runtimeUs, remainingUs);
+        if (runtimeUs > CYCLE_TIME_US) {
+            dprintf(LOGLEVEL_WARNING,
+                    "The time for the last cycle (%luus) was longer than the PLC cycle time\n",
+                    runtimeUs);
+        }
 
         // read inputs
         adi->ReadStart(kbusDeviceId, taskId);
@@ -214,12 +219,11 @@ reset_results:
         adi->WriteBytes(kbusDeviceId, taskId, 0, outputDataSize, outputData);
         adi->WriteEnd(kbusDeviceId, taskId);
 
-        // measure the runtime and sleep until the cycle time has elapsed
+        // measure the runtime and sleep until the cycle time has elapsed,
+        // making sure we always loop in multiples of the cycle time
         clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
-        runtimeNs = (finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec);
-
-        // potential bug: If the loop ever takes longer than the cycle time this will lock up
-        remainingUs = CYCLE_TIME_US - (runtimeNs / 1000);
+        runtimeUs = ((finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec) / 1000);
+        remainingUs = CYCLE_TIME_US - (runtimeUs % CYCLE_TIME_US);
         usleep(remainingUs);
     }
 
