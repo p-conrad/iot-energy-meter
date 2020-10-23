@@ -120,7 +120,7 @@ UnitDescription *find_description_with_id(const UnitDescription **list, size_t l
 UnitDescription RMSVoltageL1N = {
     .metID = VOLTAGE_RMS_L1N,
     .unit = "V",
-    .description = "RMS voltage, L1-N",
+    .description = "RMS Voltage, L1-N",
     .scalingFactor = 100,
     .isUnsigned = true
 };
@@ -128,7 +128,7 @@ UnitDescription RMSVoltageL1N = {
 UnitDescription RMSVoltageL2N = {
     .metID = VOLTAGE_RMS_L2N,
     .unit = "V",
-    .description = "RMS voltage, L2-N",
+    .description = "RMS Voltage, L2-N",
     .scalingFactor = 100,
     .isUnsigned = true
 };
@@ -136,7 +136,7 @@ UnitDescription RMSVoltageL2N = {
 UnitDescription RMSVoltageL3N = {
     .metID = VOLTAGE_RMS_L3N,
     .unit = "V",
-    .description = "RMS voltage, L3-N",
+    .description = "RMS Voltage, L3-N",
     .scalingFactor = 100,
     .isUnsigned = true
 };
