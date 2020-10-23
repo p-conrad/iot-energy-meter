@@ -174,9 +174,9 @@ char *get_MQTT_message_string(ResultSet *results) {
 void *get_MQTT_protobuf_message(ResultSet *results, size_t *size) {
     ResultSetMsg msg = RESULT_SET_MSG__INIT;
     void *buf;
-    double voltage[3];
-    double effective_power[3];
-    double reactive_power[3];
+    uint32_t voltage[3];
+    int32_t effective_power[3];
+    int32_t reactive_power[3];
 
     msg.index = results->moduleIndex;
     double usecs = round(results->timestamp.tv_nsec / 1E6) / 1000;
@@ -184,19 +184,22 @@ void *get_MQTT_protobuf_message(ResultSet *results, size_t *size) {
 
     // Fill the results. We trust that the values for each phase are in correct order
     // and there are no duplicate entries, otherwise this would need to be a lot more complicated
+    // Results are upscaled by a factor of 1000 in order to transmit them as integer values, but
+    // perhaps there could be a cleaner way to do it in the future by getting rid of the intermediary
+    // double altogether
     size_t v_i = 0, ep_i = 0, rp_i = 0;
     for (size_t i = 0; i <= results->size; i++) {
         MET_ID_AC id = results->descriptions[i]->metID;
         if (id == VOLTAGE_RMS_L1N || id == VOLTAGE_RMS_L2N || id == VOLTAGE_RMS_L3N) {
-            voltage[v_i] = results->values[i];
+            voltage[v_i] = (uint32_t)(results->values[i] * 1000);
             v_i++;
         }
         else if (id == POWER_EFFECTIVE_L1 || id == POWER_EFFECTIVE_L2 || id == POWER_EFFECTIVE_L3) {
-            effective_power[ep_i] = results->values[i];
+            effective_power[ep_i] = (int32_t)(results->values[i] * 1000);
             ep_i++;
         }
         else if (id == POWER_REACTIVE_L1 || id == POWER_REACTIVE_L2 || id == POWER_REACTIVE_L3) {
-            reactive_power[rp_i] = results->values[i];
+            reactive_power[rp_i] = (int32_t)(results->values[i] * 1000);
             rp_i++;
         }
     }

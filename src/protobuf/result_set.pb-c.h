@@ -29,11 +29,11 @@ struct  _ResultSetMsg
   uint32_t index;
   double timestamp;
   size_t n_voltage;
-  double *voltage;
+  uint32_t *voltage;
   size_t n_effective_power;
-  double *effective_power;
+  int32_t *effective_power;
   size_t n_reactive_power;
-  double *reactive_power;
+  int32_t *reactive_power;
 };
 #define RESULT_SET_MSG__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&result_set_msg__descriptor) \
