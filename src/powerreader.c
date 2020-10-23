@@ -126,9 +126,10 @@ int main(void) {
     exit_on_error(set_application_state(adi, event));
 
     struct timespec startTime, finishTime;
-    unsigned long runtimeUs = 0, remainingUs = 0;
+    unsigned long startTimeUs, finishTimeUs, runtimeUs, remainingUs;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
+        startTimeUs = (startTime.tv_sec * 1000000) + (startTime.tv_nsec / 1000);
         exit_on_error(trigger_cycle(adi, kbusDeviceId));
         adi->WatchdogTrigger();
 
@@ -222,7 +223,8 @@ reset_results:
         // measure the runtime and sleep until the cycle time has elapsed,
         // making sure we always loop in multiples of the cycle time
         clock_gettime(CLOCK_MONOTONIC_RAW, &finishTime);
-        runtimeUs = ((finishTime.tv_sec - startTime.tv_sec) * 1E9 + (finishTime.tv_nsec - startTime.tv_nsec) / 1000);
+        finishTimeUs = (finishTime.tv_sec * 1000000) + (finishTime.tv_nsec / 1000);
+        runtimeUs = finishTimeUs - startTimeUs;
         remainingUs = CYCLE_TIME_US - (runtimeUs % CYCLE_TIME_US);
         usleep(remainingUs);
     }
