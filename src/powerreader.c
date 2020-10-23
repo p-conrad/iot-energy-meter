@@ -126,7 +126,7 @@ int main(void) {
     exit_on_error(set_application_state(adi, event));
 
     struct timespec startTime, finishTime;
-    unsigned long startTimeUs, finishTimeUs, runtimeUs, remainingUs;
+    unsigned long startTimeUs, finishTimeUs, runtimeUs = 0, remainingUs = 0;
     while (running) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
         startTimeUs = (startTime.tv_sec * 1000000) + (startTime.tv_nsec / 1000);
