@@ -101,7 +101,7 @@ int main(void) {
         &ReactivePowerN3
     };
     const size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
-    const size_t completionMinCycles = ceil(nrOfMeasurements / 4);
+    const size_t completionMinCycles = ceil((double)nrOfMeasurements / 4);
     // The module can provide up to 4 measurements. If our list is shorter than that,
     // instead of looping around we simply don't fill the leftover slots.
     const size_t iMax = nrOfMeasurements >= 4 ? 4 : nrOfMeasurements;
@@ -115,7 +115,7 @@ int main(void) {
         return -ERROR_ALLOCATION_FAILED;
     }
     // prevent sending all finished results at once by staggering them onto all available cycles
-    const size_t maxSendCount = ceil(pmModuleCount / completionMinCycles);
+    const size_t maxSendCount = ceil((double)pmModuleCount / completionMinCycles);
     size_t messagesSent = 0;
 
     // set up MQTT
@@ -175,13 +175,8 @@ int main(void) {
                 }
             }
 
-            if (messagesSent >= maxSendCount) {
-                // leave the results be if we already sent enough messages during this cycle
-                continue;
-            }
-
             // send the finished results and then reset them
-            if (results[modIndex].currentCount == results[modIndex].size) {
+            if (results[modIndex].currentCount == results[modIndex].size && messagesSent <= maxSendCount) {
                 clock_gettime(CLOCK_TAI, &results[modIndex].timestamp);
                 if (MQTTAsync_isConnected(client)) {
                     // Paho will handle the deallocation of msg for us, so we don't have to worry about it
