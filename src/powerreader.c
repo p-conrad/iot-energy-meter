@@ -101,6 +101,7 @@ int main(void) {
         &ReactivePowerN3
     };
     const size_t nrOfMeasurements = sizeof(listOfMeasurements) / sizeof(UnitDescription*);
+    const size_t completionMinCycles = ceil(nrOfMeasurements / 4);
     // The module can provide up to 4 measurements. If our list is shorter than that,
     // instead of looping around we simply don't fill the leftover slots.
     const size_t iMax = nrOfMeasurements >= 4 ? 4 : nrOfMeasurements;
@@ -113,6 +114,9 @@ int main(void) {
         dprintf(LOGLEVEL_ERR, "Memory allocation for the result set failed\n");
         return -ERROR_ALLOCATION_FAILED;
     }
+    // prevent sending all finished results at once by staggering them onto all available cycles
+    const size_t maxSendCount = ceil(pmModuleCount / completionMinCycles);
+    size_t messagesSent = 0;
 
     // set up MQTT
     MQTTAsync client = MQTT_init_and_connect();
@@ -132,6 +136,7 @@ int main(void) {
         startTimeUs = (startTime.tv_sec * 1000000) + (startTime.tv_nsec / 1000);
         exit_on_error(trigger_cycle(adi, kbusDeviceId));
         adi->WatchdogTrigger();
+        messagesSent = 0;
 
         dprintf(LOGLEVEL_DEBUG,
                 "Time required for the last cycle: %luus (%luus remaining)\n",
@@ -170,6 +175,11 @@ int main(void) {
                 }
             }
 
+            if (messagesSent >= maxSendCount) {
+                // leave the results be if we already sent enough messages during this cycle
+                continue;
+            }
+
             // send the finished results and then reset them
             if (results[modIndex].currentCount == results[modIndex].size) {
                 clock_gettime(CLOCK_TAI, &results[modIndex].timestamp);
@@ -190,6 +200,8 @@ int main(void) {
                     int pubResult;
                     if ((pubResult = MQTTAsync_sendMessage(client, MQTT_TOPIC, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
                         printf("Failed to start sendMessage, return code %d\n", pubResult);
+                    } else {
+                        messagesSent += 1;
                     }
                 }
 reset_results:
