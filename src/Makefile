@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # Compiler flags
 #------------------------------------------------------------------------------
-CFLAGS += -O0 -g3  -Wall
+CFLAGS += -O1 -g3  -Wall
 #CFLAGS += -O2 -g   -Wsign-compare -Wfloat-equal -Wformat-security #-Werror
 
 CFLAGS += -I$(SYSROOT)/usr/include/OsLinux/
