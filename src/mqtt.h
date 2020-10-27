@@ -267,6 +267,8 @@ ErrorCode send_MQTT5_message(MQTTAsync client, ResultSet *results) {
         dprintf(LOGLEVEL_ERR, "Failed to start sendMessage, return code %d\n", pubResult);
         return -ERROR_MQTT_MSG_SEND_FAILED;
     } else {
+        // this is rather simplistic - would would want to make sure our first message has actually
+        // been received by the server when using this in production
         topicSent = true;
     }
 
