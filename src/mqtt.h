@@ -134,8 +134,6 @@ void MQTT_disconnect_and_destroy(MQTTAsync client) {
  * @retval The resulting string allocated on the heap
  */
 char *get_MQTT_message_string(ResultSet *results) {
-    // Anything involving strings in C is awful, so I'm not sure if this is the right way to do it.
-    // potential TODO: check this again, especially regarding memory safety
     char resultBuf[4096];
     char lineBuf[128];
     memset(resultBuf, 0, sizeof(resultBuf));
