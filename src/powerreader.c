@@ -56,7 +56,7 @@ int main(void) {
     exit_on_error(set_application_state(adi, event));
 
     if (ldkc_KbusInfo_Create() == KbusInfo_Failed) {
-        printf("Failed to create KBus info\n");
+        dprintf(LOGLEVEL_ERR, "Failed to create KBus info\n");
         adi->CloseDevice(kbusDeviceId);
         adi->Exit();
         return -ERROR_KBUSINFO_CREATE_FAILED;
