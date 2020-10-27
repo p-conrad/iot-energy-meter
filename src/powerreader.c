@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------------------
 #define CYCLE_TIME_US 50000
 
-// TODO: This should be configurable by a script
+// This could be configurable by a commandline parameter in the future
 Loglevel loglevel = LOGLEVEL_DEBUG;
 
 // Signal handling

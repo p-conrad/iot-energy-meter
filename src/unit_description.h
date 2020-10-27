@@ -15,7 +15,7 @@
  *        measurement value.
  */
 typedef struct UnitDescription {
-    // TODO: This needs to somehow change if we ever want to use a different table
+    // this needs to somehow change if we ever want to use a different table
     const MET_ID_AC metID;
     const char *unit;
     const char *description;
