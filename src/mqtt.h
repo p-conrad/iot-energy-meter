@@ -14,21 +14,21 @@
 #include "protobuf/result_set.pb-c.h"
 
 /* MQTT callbacks */
-void on_connect_success(void *context, MQTTAsync_successData *response) {
+void on_connect_success(void *context, MQTTAsync_successData5 *response) {
     dprintf(LOGLEVEL_INFO, "Connection to the MQTT broker successful\n");
 }
 
-void on_connect_failure(void *context, MQTTAsync_failureData *response) {
+void on_connect_failure(void *context, MQTTAsync_failureData5 *response) {
     dprintf(LOGLEVEL_ERR,
             "Connection to the MQTT broker failed, response code: %d\n",
             response->code);
 }
 
-void on_disconnect(void *context, MQTTAsync_successData *response) {
+void on_disconnect(void *context, MQTTAsync_successData5 *response) {
     dprintf(LOGLEVEL_INFO, "Successfully disconnected\n");
 }
 
-void on_disconnect_failure(void *context, MQTTAsync_failureData *response) {
+void on_disconnect_failure(void *context, MQTTAsync_failureData5 *response) {
     dprintf(LOGLEVEL_ERR,
             "Disconnection failed. response code: %d\n",
             response->code);
@@ -51,13 +51,13 @@ int on_message_arrived(void *context, char *topicName, int topicLen, MQTTAsync_m
     return 1;
 }
 
-void on_send(void *context, MQTTAsync_successData *response) {
+void on_send(void *context, MQTTAsync_successData5 *response) {
     dprintf(LOGLEVEL_DEBUG,
             "Message with token value %d delivery confirmed\n",
             response->token);
 }
 
-void on_send_failure(void *context, MQTTAsync_failureData *response) {
+void on_send_failure(void *context, MQTTAsync_failureData5 *response) {
     dprintf(LOGLEVEL_ERR,
             "Sending message failed for token %d, error code: %d\n",
             response->token,
@@ -71,6 +71,9 @@ const int MQTT_QOS_DEFAULT = 0;
 const char *MQTT_CLIENT_ID = "Starterkit";
 const int MQTT_KEEPALIVE_S = 20;
 
+// whether the topic has already been sent to the server, so we can use an alias istead
+bool topicSent = false;
+
 /**
  * @brief Initializes the MQTT client and connects it to the broker.
  *
@@ -78,18 +81,20 @@ const int MQTT_KEEPALIVE_S = 20;
  */
 MQTTAsync MQTT_init_and_connect() {
     MQTTAsync client;
+    MQTTAsync_createOptions createOpts = MQTTAsync_createOptions_initializer5;
+    createOpts.deleteOldestMessages = 1;
+    createOpts.restoreMessages = 0;
     // No persistence should be fine. Messages get out of date immediately and
     // we can always get a reference value from the module later.
-    MQTTAsync_create(&client, MQTT_ADDRESS, MQTT_CLIENT_ID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTAsync_createWithOptions(&client, MQTT_ADDRESS, MQTT_CLIENT_ID, MQTTCLIENT_PERSISTENCE_NONE, NULL, &createOpts);
     MQTTAsync_setCallbacks(client, NULL, on_connection_lost, on_message_arrived, NULL);
 
-    MQTTAsync_connectOptions connOpts = MQTTAsync_connectOptions_initializer;
+    MQTTAsync_connectOptions connOpts = MQTTAsync_connectOptions_initializer5;
     connOpts.context = client;
     connOpts.keepAliveInterval = 20;
-    connOpts.cleansession = 1;
     connOpts.automaticReconnect = 1;
-    connOpts.onSuccess = on_connect_success;
-    connOpts.onFailure = on_connect_failure;
+    connOpts.onSuccess5 = on_connect_success;
+    connOpts.onFailure5 = on_connect_failure;
 
     int connectResult;
     if ((connectResult = MQTTAsync_connect(client, &connOpts)) != MQTTASYNC_SUCCESS) {
@@ -105,9 +110,9 @@ MQTTAsync MQTT_init_and_connect() {
  * @param[in] client The MQTT client
  */
 void MQTT_disconnect_and_destroy(MQTTAsync client) {
-    MQTTAsync_disconnectOptions discOpts = MQTTAsync_disconnectOptions_initializer;
-    discOpts.onSuccess = on_disconnect;
-    discOpts.onFailure = on_disconnect_failure;
+    MQTTAsync_disconnectOptions discOpts = MQTTAsync_disconnectOptions_initializer5;
+    discOpts.onSuccess5 = on_disconnect;
+    discOpts.onFailure5 = on_disconnect_failure;
 
     if (MQTTAsync_isConnected(client)) {
         int disconnectResult;
@@ -219,6 +224,55 @@ void *get_MQTT_protobuf_message(ResultSet *results, size_t *size) {
 
     result_set_msg__pack(&msg, buf);
     return buf;
+}
+
+/**
+ * @brief Sends a ResultSet using MQTT 5
+ *
+ * @param[in] client The properly initialized MQTT client
+ * @param[in] results A pointer to the comleted ResultSet
+ * @retval ERROR_SUCCESS on success, another error code otherwise
+ */
+ErrorCode send_MQTT5_message(MQTTAsync client, ResultSet *results) {
+    MQTTAsync_responseOptions responseOpts = MQTTAsync_responseOptions_initializer;
+    responseOpts.onSuccess5 = on_send;
+    responseOpts.onFailure5 = on_send_failure;
+    responseOpts.context = client;
+
+    // Paho will handle the deallocation of msg for us, so we don't have to worry about it
+    size_t msgLength;
+    void *msg = get_MQTT_protobuf_message(results, &msgLength);
+    if (msg == NULL) {
+        dprintf(LOGLEVEL_ERR, "Failed to create the MQTT message\n");
+        return -ERROR_MQTT_MSG_CREATION_FAILED;
+    }
+    MQTTProperties messageProps = MQTTProperties_initializer;
+    MQTTProperty aliasProp = {
+        .identifier = MQTTPROPERTY_CODE_TOPIC_ALIAS,
+        .value = { .integer2 = 1 }
+    };
+    messageProps.array = &aliasProp;
+    messageProps.length = sizeof(aliasProp);
+    messageProps.count = 1;
+    messageProps.max_count = 1;
+
+    MQTTAsync_message message = MQTTAsync_message_initializer;
+    message.payload = msg;
+    message.payloadlen = msgLength;
+    message.qos = MQTT_QOS_DEFAULT;
+    message.properties = messageProps;
+
+    const char *topic = topicSent ? "" : MQTT_TOPIC;
+
+    int pubResult;
+    if ((pubResult = MQTTAsync_sendMessage(client, topic, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
+        dprintf(LOGLEVEL_ERR, "Failed to start sendMessage, return code %d\n", pubResult);
+        return -ERROR_MQTT_MSG_SEND_FAILED;
+    } else {
+        topicSent = true;
+    }
+
+    return ERROR_SUCCESS;
 }
 
 #endif

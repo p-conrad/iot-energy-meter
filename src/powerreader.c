@@ -120,10 +120,6 @@ int main(void) {
 
     // set up MQTT
     MQTTAsync client = MQTT_init_and_connect();
-    MQTTAsync_responseOptions responseOpts = MQTTAsync_responseOptions_initializer;
-    responseOpts.onSuccess = on_send;
-    responseOpts.onFailure = on_send_failure;
-    responseOpts.context = client;
 
     // set the application state to 'running' and start the main loop
     event.State = ApplicationState_Running;
@@ -179,27 +175,11 @@ int main(void) {
             if (results[modIndex].currentCount == results[modIndex].size && messagesSent <= maxSendCount) {
                 clock_gettime(CLOCK_TAI, &results[modIndex].timestamp);
                 if (MQTTAsync_isConnected(client)) {
-                    // Paho will handle the deallocation of msg for us, so we don't have to worry about it
-                    size_t msgLength;
-                    void *msg = get_MQTT_protobuf_message(&results[modIndex], &msgLength);
-                    if (msg == NULL) {
-                        dprintf(LOGLEVEL_ERR, "Failed to create the MQTT message\n");
-                        goto reset_results;
-                    }
-                    MQTTAsync_message message = MQTTAsync_message_initializer;
-                    message.payload = msg;
-                    message.payloadlen = msgLength;
-                    message.qos = MQTT_QOS_DEFAULT;
-                    message.retained = 0;
-
-                    int pubResult;
-                    if ((pubResult = MQTTAsync_sendMessage(client, MQTT_TOPIC, &message, &responseOpts)) != MQTTASYNC_SUCCESS) {
-                        printf("Failed to start sendMessage, return code %d\n", pubResult);
-                    } else {
+                    if (send_MQTT5_message(client, &results[modIndex]) == ERROR_SUCCESS) {
                         messagesSent += 1;
                     }
                 }
-reset_results:
+
                 results[modIndex].currentCount = 0;
                 memset(results[modIndex].validity, 0, sizeof(bool) * results[modIndex].size);
                 memset(&results[modIndex].timestamp, 0, sizeof(struct timespec));
