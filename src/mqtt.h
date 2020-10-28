@@ -13,27 +13,56 @@
 #include "utils.h"
 #include "protobuf/result_set.pb-c.h"
 
-/* MQTT callbacks */
+/**
+ * @brief Callback for the successful connection event
+ *
+ * @param[in] context Context data previously assigned to the connection options
+ * @param[in] response The response data of the request
+ */
 void on_connect_success(void *context, MQTTAsync_successData5 *response) {
     dprintf(LOGLEVEL_INFO, "Connection to the MQTT broker successful\n");
 }
 
+/**
+ * @brief Callback for the connection failure event
+ *
+ * @param[in] context Context data previously assigned to the connection options
+ * @param[in] response The response data of the request
+ */
 void on_connect_failure(void *context, MQTTAsync_failureData5 *response) {
     dprintf(LOGLEVEL_ERR,
             "Connection to the MQTT broker failed, response code: %d\n",
             response->code);
 }
 
+/**
+ * @brief Callback for the disconnected event
+ *
+ * @param[in] context Context data previously assigned to the disconnect options
+ * @param[in] response The response data of the request
+ */
 void on_disconnect(void *context, MQTTAsync_successData5 *response) {
     dprintf(LOGLEVEL_INFO, "Successfully disconnected\n");
 }
 
+/**
+ * @brief Callback for the disconnect failure event
+ *
+ * @param[in] context Context data previously assigned to the disconnect options
+ * @param[in] response The response data of the request
+ */
 void on_disconnect_failure(void *context, MQTTAsync_failureData5 *response) {
     dprintf(LOGLEVEL_ERR,
             "Disconnection failed. response code: %d\n",
             response->code);
 }
 
+/**
+ * @brief Callback for the connection lost event
+ *
+ * @param[in] context Context data previously assigned to the connection options
+ * @param[in] cause The cause of the lost connection
+ */
 void on_connection_lost(void *context, char *cause) {
     // automatic reconnection is set in the connection options and should happen
     // without taking any action here
@@ -42,6 +71,16 @@ void on_connection_lost(void *context, char *cause) {
             cause);
 }
 
+/**
+ * @brief Callback for the message arrived event
+ *
+ * @param[in] context Context data previously assigned to the connection options
+ * @param[in] topicName The name of the topic of the message
+ * @param[in] topicLen The length of the topic of the message
+ * @param[inout] message The MQTT message data containing the payload
+ *
+ * @retval 1 to indicate successful processing of the message
+ */
 int on_message_arrived(void *context, char *topicName, int topicLen, MQTTAsync_message *message) {
     dprintf(LOGLEVEL_DEBUG,
             "Message arrived on topic %s: %.*s",
@@ -51,12 +90,24 @@ int on_message_arrived(void *context, char *topicName, int topicLen, MQTTAsync_m
     return 1;
 }
 
+/**
+ * @brief Callback for the message delivery confirmed event
+ *
+ * @param[in] context The context previously assigned to the response options
+ * @param[in] response The response data of the request
+ */
 void on_send(void *context, MQTTAsync_successData5 *response) {
     dprintf(LOGLEVEL_DEBUG,
             "Message with token value %d delivery confirmed\n",
             response->token);
 }
 
+/**
+ * @brief Callback for the message sending failed event
+ *
+ * @param[in] context The context previously assigned to the response options
+ * @param[in] response The response data of the request
+ */
 void on_send_failure(void *context, MQTTAsync_failureData5 *response) {
     dprintf(LOGLEVEL_ERR,
             "Sending message failed for token %d, error code: %d\n",
@@ -71,7 +122,7 @@ const int MQTT_QOS_DEFAULT = 0;
 const char *MQTT_CLIENT_ID = "Starterkit";
 const int MQTT_KEEPALIVE_S = 20;
 
-// whether the topic has already been sent to the server, so we can use an alias istead
+/// whether the topic has already been sent to the server, so we can use an alias istead
 bool topicSent = false;
 
 /**

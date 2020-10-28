@@ -12,28 +12,28 @@
 
 /**
  * @brief A struct containing all necessary information for querying a
- *        measurement value.
+ *        measurement value
  */
 typedef struct UnitDescription {
     // this needs to somehow change if we ever want to use a different table
-    const MET_ID_AC metID;
-    const char *unit;
-    const char *description;
-    const int scalingFactor;
-    const bool isUnsigned;
+    const MET_ID_AC metID;     ///< The measurement ID as it appears in the process image @see MET_ID_AC
+    const char *unit;          ///< The unit of this measurement value
+    const char *description;   ///< A verbose description of this measurement value
+    const int scalingFactor;   ///< The factor by which the value in the process image has been scaled up
+    const bool isUnsigned;     ///< Whether the value in the process image is unsigned
 } UnitDescription;
 
 /**
  * @brief A struct containing a list of UnitDescription together with their current result values, and a timestamp.
  */
 typedef struct ResultSet {
-    const UnitDescription **descriptions;
-    const size_t size;
-    const size_t moduleIndex;       /* index of the power measurement module on the bus */
-    double *values;                 /* result values at the same positions as descriptions */
-    struct timespec timestamp;      /* the timestamp when the set was completed */
-    bool *validity;                 /* used to determine whether a certain value has already been filled */
-    size_t currentCount;            /* number of valid entries to quickly know whether the set is finshed */
+    const UnitDescription **descriptions;   ///< The list of UnitDescription instances belonging to the result values @see UnitDescription
+    const size_t size;                      ///< The size of the descriptions and values field
+    const size_t moduleIndex;               ///< Index of the power measurement module on the bus for this set
+    double *values;                         ///< Result values at the same positions as descriptions, must be the same length
+    struct timespec timestamp;              ///< The timestamp when the set was completed
+    bool *validity;                         ///< Used to determine whether a certain value has already been filled
+    size_t currentCount;                    ///< Number of valid entries to know whether the set is finshed
 } ResultSet;
 
 
@@ -42,7 +42,7 @@ typedef struct ResultSet {
  *
  * @param[in] descriptions The list of UnitDescriptions to associate with the ResultSets
  * @param[in] descSize The length of the UnitDescription list
- * @param[in] The number of modules (e.g. the resulting size) to allocate the ResultSets for
+ * @param[in] moduleCount The number of modules (e.g. the resulting size) to allocate the ResultSets for
  * @retval A pointer to the allocated ResultSets, or NULL on alloation failure
  */
 ResultSet *allocate_results(const UnitDescription **descriptions, const size_t descSize, const size_t moduleCount) {
