@@ -4,7 +4,6 @@ config PAHO_MQTT_C
 	tristate "paho.mqtt.c"
 	select HOST_CMAKE
 	select OPENSSL
-	select GLIBC_ANL
 	help
 	  C package implementing MQTT client library by Eclipse Paho
 
