@@ -3,6 +3,7 @@
 config WINNER_POWER_READER
 	bool
 	select DAL
+	select PROTOBUF_C
 	select PAHO_MQTT_C
 	prompt "WINNER Reloaded Power Reading Tool"
 	help
