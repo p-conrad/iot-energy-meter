@@ -1,22 +1,22 @@
 [
     {
         "arguments": [
-            "/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc",
+            "/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc",
             "-c",
             "-O0",
             "-g3",
             "-Wall",
             "-I../../ptxproj/platform-wago-pfcXXX/sysroot-target/usr/include",
             "-I../../ptxproj/platform-wago-pfcXXX/sysroot-target/usr/include/OsLinux",
-            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.5.0/include",
-            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/5.5.0/include-fixed",
-            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/arm-linux-gnueabihf/include",
-            "-I/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include",
+            "-I/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/9.2.1/include",
+            "-I/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/9.2.1/include-fixed",
+            "-I/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/arm-linux-gnueabihf/include",
+            "-I/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include",
             "-o",
             "powerreader.o",
             "powerreader.c"
         ],
-        "directory": "/home/peter/Studium/MS5/Masterarbeit/winner-power-reader/src",
+        "directory": "/home/peter/Dokumente/Arbeit/Repositories/winner-power-reader/src",
         "file": "powerreader.c"
     }
 ]
