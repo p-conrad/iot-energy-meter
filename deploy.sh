@@ -7,11 +7,11 @@ PROJECT_VERSION="0.5"
 PKG_NAME="${PROJECT_NAME}_${PROJECT_VERSION}_armhf.ipk"
 PKG_PATH="platform-wago-pfcXXX/packages/${PKG_NAME}"
 
+mkdir -p ${PTX_PATH}/src/${PROJET_NAME}
 cp -fr src/* "${PTX_PATH}/src/${PROJECT_NAME}"
 cd $PTX_PATH
 ptxdist clean $PROJECT_NAME
-set -o pipefail
-ptxdist targetinstall $PROJECT_NAME | grep -v dlsym
+ptxdist targetinstall $PROJECT_NAME
 
 retval=$?
 if [[ $retval -ne 0 ]]
