@@ -13,12 +13,12 @@ CFLAGS += -I$(SYSROOT)/usr/include/dal/
 LDFLAGS += -ldal -llibloader -lpthread -lffi -lrt -ldbus-glib-1 -lglib-2.0 -lm
 LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon -lpaho-mqtt3as -lprotobuf-c
 
-OBJECTS := powerreader.o protobuf/result_set.pb-c.o
-EXECUTABLE := powerreader
+OBJECTS := energymeter.o protobuf/result_set.pb-c.o
+EXECUTABLE := energymeter
 
-all: powerreader
+all: energymeter
 
-powerreader: $(OBJECTS)
+energymeter: $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXECUTABLE) $(LDFLAGS)
 
 clean:

@@ -13,10 +13,10 @@
             "-I/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/arm-linux-gnueabihf/include",
             "-I/opt/gcc-Toolchain-2019.12/arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include",
             "-o",
-            "powerreader.o",
-            "powerreader.c"
+            "energymeter.o",
+            "energymeter.c"
         ],
-        "directory": "/home/peter/Dokumente/Arbeit/Repositories/winner-power-reader/src",
-        "file": "powerreader.c"
+        "directory": "/home/user/iot-energy-meter/src",
+        "file": "energymeter.c"
     }
 ]

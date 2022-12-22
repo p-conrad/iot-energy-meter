@@ -43,9 +43,9 @@ int main(void) {
     uint32_t taskId = 0;
     tApplicationStateChangedEvent event;
 
-    printf("**************************************************\n");
-    printf("***         WINNER Power Measurement           ***\n");
-    printf("**************************************************\n");
+    printf("*******************************************\n");
+    printf("***         IoT Energy Meter            ***\n");
+    printf("*******************************************\n");
 
     // initialize the ADI and find the process data size
     adi = adi_GetApplicationInterface();

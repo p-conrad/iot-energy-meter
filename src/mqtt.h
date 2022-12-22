@@ -117,9 +117,9 @@ void on_send_failure(void *context, MQTTAsync_failureData5 *response) {
 
 /* MQTT settings */
 const char *MQTT_ADDRESS = "tcp://192.168.1.80:1883";
-const char *MQTT_TOPIC = "winner/powerreader/results";
+const char *MQTT_TOPIC = "wago/energymeter/results";
 const int MQTT_QOS_DEFAULT = 0;
-const char *MQTT_CLIENT_ID = "Starterkit";
+const char *MQTT_CLIENT_ID = "IoT-Energy-Meter";
 const int MQTT_KEEPALIVE_S = 20;
 
 /// whether the topic has already been sent to the server, so we can use an alias istead

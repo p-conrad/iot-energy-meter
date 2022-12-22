@@ -2,8 +2,9 @@
 
 DEVICE_ADDRESS="192.168.1.64"
 PTX_PATH="../ptxproj"
-PROJECT_NAME="winner-power-reader"
-PKG_NAME="${PROJECT_NAME}_0.1_armhf.ipk"
+PROJECT_NAME="iot-energy-meter"
+PROJECT_VERSION="0.5"
+PKG_NAME="${PROJECT_NAME}_${PROJECT_VERSION}_armhf.ipk"
 PKG_PATH="platform-wago-pfcXXX/packages/${PKG_NAME}"
 
 cp -fr src/* "${PTX_PATH}/src/${PROJECT_NAME}"
@@ -21,5 +22,5 @@ fi
 
 scp $PKG_PATH "root@${DEVICE_ADDRESS}:~/"
 ssh "root@${DEVICE_ADDRESS}" "opkg install --force-reinstall ${PKG_NAME}"
-#ssh "root@${DEVICE_ADDRESS}" powerreader
+#ssh "root@${DEVICE_ADDRESS}" energymeter
 ssh "root@${DEVICE_ADDRESS}"

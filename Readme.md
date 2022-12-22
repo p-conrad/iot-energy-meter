@@ -1,4 +1,4 @@
-# WINNER Power Reader
+# IoT Energy Meter
 
 This is a program intended to run on WAGO I/O System 750/753 series programmable logic controllers (PLC), replacing the
 default CoDeSys/e!Cokpit runtime. Taking control of the local KBus, it scans for all compatible 750-795/794 power

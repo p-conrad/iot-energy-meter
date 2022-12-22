@@ -22,16 +22,16 @@ LDFLAGS += -ldal -llibloader -lpthread -lffi -lrt -ldbus-glib-1 -lglib-2.0
 LDFLAGS += -ltypelabel -loslinux -ldbuskbuscommon
 
 
-all: powerreader
+all: energymeter
 
-powerreader: powerreader.o
+energymeter: energymeter.o
 	/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc -o $@ $< $(LDFLAGS)
 
-powerreader.o: powerreader.c
+energymeter.o: energymeter.c
 	/opt/LINARO.Toolchain-2017.10/arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc $(CFLAGS) -c $< -o $@
 
 clean:
-	-rm -f powerreader powerreader.o
+	-rm -f energymeter energymeter.o
 
 install:
 
