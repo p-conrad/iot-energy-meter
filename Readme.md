@@ -1,14 +1,14 @@
 # IoT Energy Meter
 
 This is a program intended to run on WAGO I/O System 750/753 series programmable logic controllers
-(PLC), replacing the default CoDeSys/e!Cokpit runtime. Taking control of the local KBus, it scans
+(PLC), replacing the default CoDeSys/e!Cockpit runtime. Taking control of the local KBus, it scans
 for all compatible 750-795/794 power measurement modules and cyclically reads out a predefined set
-of measurement values while honoring the PLC cycle time.  Once a set of measurements is completed,
+of measurement values while honouring the PLC cycle time.  Once a set of measurements is completed,
 a timestamp is added and the results are sent out via MQTT to a configured MQTT broker.
 
 This project is the result of my master's thesis and was originally created as a part of the
 [WINNER Reloaded](https://winner-projekt.de/) research project for reading energy data in
-a residential development. Development concluded in the beginning of 2021 and while I have been
+a residential development. Development concluded at the beginning of 2021 and while I have been
 updating some parts to reflect recent changes to WAGO's PFC Firmware SDK, some more testing will
 be required to guarantee correct compilation and execution on newer firmware versions. This
 repository will be updated accordingly when I get the chance to test and verify it with a real PLC
@@ -20,8 +20,8 @@ again.
 * This program can read most of the energy values the 795/794 power measurement modules provide,
   from an arbitrary number of modules on the KBus. If there are more than 4 values configured,
   they are read in multiple cycles.
-* Transient reaction processes of the module are taken into account, preventing the reading of
-  unstable values.
+* Transient reaction processes of the modules are taken into account, preventing the reading of
+  unstable or incorrect values.
 * Measurement results can be sent via MQTT either using plain text or
   [Protocol Buffers](https://developers.google.com/protocol-buffers/) according to the message
   definition in this repository. Protobuf messages are limited to this format (currently voltage,
@@ -32,17 +32,18 @@ again.
   reduce bandwidth usage. However, changing the code to MQTT 3.1.1 requires only a few simple
   changes (see 3d18f386).
 * Furthermore, MQTT messages are staggered across multiple cycles where possible, to prevent spikes
-  in bandwidth usage and allow for a more stable run time behaviour. For example: Reading
+  in bandwidth usage and allow for a more stable run time behaviour. For instance: Reading
   8 measurement values from 10 modules would result in 10 messages after 8/4=2 cycles. Instead of
-  sending them all at once (and none during the next cycle), 5 messages are sent in each cycle.
+  sending them all at once (and none during the next cycle), 5 messages are sent during each cycle
+  instead.
 
 Moreover, this project may provide some educational value by showcasing an end-to-end example for
 developing a real-world application with WAGO's PFC Firmware SDK, including:
-* an example on how to set up your development environment with [clangd](https://clangd.llvm.org/),
+* an example of how to set up your development environment with [clangd](https://clangd.llvm.org/),
   so you get the full editing convenience including code completion and syntax checking,
 * a deployment script to automate compilation and deployment to the device, allowing for rapid
   development, and
-* an example on code documentation using [Doxygen](https://www.doxygen.nl/).
+* an example of code documentation using [Doxygen](https://www.doxygen.nl/).
 
 
 ## Limitations
@@ -50,8 +51,8 @@ developing a real-world application with WAGO's PFC Firmware SDK, including:
 This project has mainly been developed for research and has a few limitations:
 * Modules other than power measurement modules are not supported. While the program will correctly
   determine the process data size and allocate the process images accordingly, no actual data
-  besides zeroes will get sent to these modules and no actual data is retrieved from them. Absence
-  of erroneous behaviour for these modules cannot be guaranteed.
+  besides zeroes will get sent to these modules and no actual data is retrieved from them. The
+  absence of erroneous behaviour for these modules cannot be guaranteed.
 * Also, the 750-493 power measurement module is not supported. This module has a hugely different
   (more complex) way of querying data. The program will correctly detect this and simply ignore
   these modules.
@@ -78,9 +79,9 @@ alternatives to consider:
 * In your PLC project, set up a Modbus slave and connect it to your controller. Add data points for
   all values you want to publish and cyclically fill them using the WagoAppPowerMeasurement library.
   You can then use your favourite Modbus tool or library to read and further process them. Jonas
-  Neubert gave a really entertaining talk on this topic [here](https://www.youtube.com/watch?v=EMkWRlbpJsk).
+  Neubert gave an entertaining talk on this topic [here](https://www.youtube.com/watch?v=EMkWRlbpJsk).
 * Try [Node-RED](https://nodered.org/), a graphical low-code programming environment for connecting
-  devices and more. WAGO distributes [their own custom version](https://github.com/WAGO/node-red-iot)
+  devices and more. WAGO distributes [their custom version](https://github.com/WAGO/node-red-iot)
   with some useful packages preinstalled and there is also a library to map some common modules
   and a tutorial video available [here](https://flows.nodered.org/node/node-red-contrib-remote-io)
   and [here](https://www.youtube.com/watch?v=9syAlOw6a_A).
@@ -94,7 +95,7 @@ alternatives to consider:
 2. Create a new directory named `iot-energy-meter` in `ptxproj/src` and copy all the source files
    in `src` there.
 3. Most settings of the program are currently hardcoded, so you probably also want to change your
-   MQTT settings in `mqtt.h` prior to building and maybe also update the `listOfMeasurements`
+   MQTT settings in `mqtt.h` before building and maybe also update the `listOfMeasurements`
    variable to include your desired measurements (see `unit_description.h` for examples).
 4. Copy the rule files into `ptxproj/rules`
 5. In your project directory, call `ptxdist menuconfig` and enable the program there.
@@ -104,7 +105,7 @@ alternatives to consider:
 Alternatively, you can use the `deploy.sh` script, which will handle most of the work for you: Just
 copy the rule files as before, do your configuration in this directory, and adjust your device
 address in the script before calling. This will update the source code in the project, build it,
-push the result to your PLC, and drop you into a SSH session, ready fire it up.
+push the result to your PLC, and drop you into an SSH session, ready fire it up.
 
 If you like to develop the project, here are some more steps:
 1. Set your project path in `compile_commands.json`. Note that only absolute paths work.
