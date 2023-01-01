@@ -89,11 +89,11 @@ without issues over several months in a lab environment, your setup and experien
 7. You can find the finished package in `ptxproj/platform-wago-pfcXXX/packages`.
 
 Alternatively, you can use the `deploy.sh` script, which will handle most of the work for you: Just
-copy the rule files as before, do your configuration in this directory, and adjust your device
-address in the script before calling. This will update the source code in the project, build it,
-push the result to your PLC, and drop you into an SSH session, ready fire it up.
+copy the rule files like before, do your configuration in this repository, and adjust your device
+address in the script before calling. This will update the source code in the project tree, build it,
+push the result to your PLC, and drop you into an SSH session on your device, ready to fire it up.
 
-If you like to develop the project, here are some more steps:
+If you like to develop the project, there are some additional steps to be done:
 1. Set your project path in `compile_commands.json`. Note that only absolute paths work.
 2. Set up your favourite editor or IDE with clangd. Now you should have code completion and
    inspection features to ease development for you.
