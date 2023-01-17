@@ -8,7 +8,7 @@ a timestamp is added and the results are sent out via MQTT to a configured MQTT 
 
 This project is the result of my master's thesis and was originally created as a part of the
 [WINNER Reloaded](https://winner-projekt.de/) research project for reading energy data in
-a residential development. Development concluded at the beginning of 2021 and while I have been
+a residential neighbourhood. Development concluded at the beginning of 2021 and while I have been
 updating some parts to reflect recent changes to WAGO's PFC Firmware SDK, some more testing will
 be required to guarantee correct compilation and execution on newer firmware versions. This
 repository will be updated accordingly when I get the chance to test and verify it with a real PLC
@@ -64,27 +64,13 @@ This project has mainly been developed for research and has a few limitations:
   However, -O1 works fine and computations in each cycle usually finish within 5ms, leaving plenty
   of headroom.
 
-**Most importantly, this program is not endorsed or supported by WAGO in any way. It has not been
+Most importantly, **this program is not endorsed or supported by WAGO in any way. It has not been
 fully tested and no guarantees can be made regarding its reliability. Do not use it in an
 environment where failure may cause injury, loss of life, or financial damage.**
 
-In a safety-critical environment, replacing the PLC runtime is rarely a good idea. If you need to
-get energy measurements from your devices but require stronger safety guarantees, here are a few
-alternatives to consider:
-* Use WAGO's [Energy Management](https://www.wago.com/global/energy-management). This is the most
-  straightforward and officially supported solution.
-* Program your PLC using the WagoAppPowerMeasurement, WagoAppCloud, and optionally WagoAppJSON
-  libraries. It can be a bit tedious, but it is doable and you get the benefit of completely staying
-  in your runtime.
-* In your PLC project, set up a Modbus slave and connect it to your controller. Add data points for
-  all values you want to publish and cyclically fill them using the WagoAppPowerMeasurement library.
-  You can then use your favourite Modbus tool or library to read and further process them. Jonas
-  Neubert gave an entertaining talk on this topic [here](https://www.youtube.com/watch?v=EMkWRlbpJsk).
-* Try [Node-RED](https://nodered.org/), a graphical low-code programming environment for connecting
-  devices and more. WAGO distributes [their custom version](https://github.com/WAGO/node-red-iot)
-  with some useful packages preinstalled and there is also a library to map some common modules
-  and a tutorial video available [here](https://flows.nodered.org/node/node-red-contrib-remote-io)
-  and [here](https://www.youtube.com/watch?v=9syAlOw6a_A).
+In a safety-critical environment, replacing the PLC runtime for custom code is rarely a good idea,
+so please consider carefully before using this project. While it had been in productive use
+without issues over several months in a lab environment, your setup and experience may differ.
 
 
 ## Setting Up and Building the Project
@@ -103,11 +89,32 @@ alternatives to consider:
 7. You can find the finished package in `ptxproj/platform-wago-pfcXXX/packages`.
 
 Alternatively, you can use the `deploy.sh` script, which will handle most of the work for you: Just
-copy the rule files as before, do your configuration in this directory, and adjust your device
-address in the script before calling. This will update the source code in the project, build it,
-push the result to your PLC, and drop you into an SSH session, ready fire it up.
+copy the rule files like before, do your configuration in this repository, and adjust your device
+address in the script before calling. This will update the source code in the project tree, build it,
+push the result to your PLC, and drop you into an SSH session on your device, ready to fire it up.
 
-If you like to develop the project, here are some more steps:
+If you like to develop the project, there are some additional steps to be done:
 1. Set your project path in `compile_commands.json`. Note that only absolute paths work.
 2. Set up your favourite editor or IDE with clangd. Now you should have code completion and
    inspection features to ease development for you.
+
+
+## Alternatives
+
+Need to retrieve energy measurements from your device but don't feel comfortable tampering with
+the runtime, or require stronger safety guarantees?
+These alternatives may work for you:
+* Use WAGO's [Energy Management](https://www.wago.com/global/energy-management). This is the most
+  straightforward and officially supported solution.
+* Program your PLC using the WagoAppPowerMeasurement, WagoAppCloud, and optionally WagoAppJSON
+  libraries. It can be a bit tedious and needs to be done individually for each module,
+  but it should work fine once everything is correctly set up.
+* In your PLC project, set up a Modbus slave and connect it to your controller. Add data points for
+  all values you want to publish and cyclically fill them using the WagoAppPowerMeasurement library.
+  You can then use your favourite Modbus tool or library to read and further process them. Jonas
+  Neubert has an entertaining talk on this topic [here](https://www.youtube.com/watch?v=EMkWRlbpJsk).
+* Try [Node-RED](https://nodered.org/), a graphical low-code programming environment for graphically
+  connecting devices and more. WAGO distributes [their custom version](https://github.com/WAGO/node-red-iot)
+  with some useful packages preinstalled and there is also a library to map some common modules
+  and a tutorial video available [here](https://flows.nodered.org/node/node-red-contrib-remote-io)
+  and [here](https://www.youtube.com/watch?v=9syAlOw6a_A).
