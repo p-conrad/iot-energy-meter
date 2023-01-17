@@ -3,16 +3,21 @@
 This is a program intended to run on WAGO I/O System 750/753 series programmable logic controllers
 (PLC), replacing the default CoDeSys/e!Cockpit runtime. Taking control of the local KBus, it scans
 for all compatible 750-795/794 power measurement modules and cyclically reads out a predefined set
-of measurement values while honouring the PLC cycle time.  Once a set of measurements is completed,
+of measurement values while honouring the PLC cycle time. Once a set of measurements is completed,
 a timestamp is added and the results are sent out via MQTT to a configured MQTT broker.
+While similar functionality can be achieved programming the devices natively in the PLC runtime,
+this program aims to be a compile-once-deploy-anywhere solution, being able to handle varying device
+configurations without needing to program each one individually, and with little tooling required.
+With some work, it may also be possible to automatically build and deploy it from within a CI/CD
+pipeline.
 
 This project is the result of my master's thesis and was originally created as a part of the
 [WINNER Reloaded](https://winner-projekt.de/) research project for reading energy data in
-a residential neighbourhood. Development concluded at the beginning of 2021 and while I have been
-updating some parts to reflect recent changes to WAGO's PFC Firmware SDK, some more testing will
-be required to guarantee correct compilation and execution on newer firmware versions. This
-repository will be updated accordingly when I get the chance to test and verify it with a real PLC
-again.
+a residential neighbourhood and measuring the impact of various setups on the network usage.
+Development concluded at the beginning of 2021 and while I have been updating some parts to reflect
+recent changes to WAGO's PFC Firmware SDK, some more testing will be required to guarantee correct
+compilation and execution on newer firmware versions. This repository will be updated accordingly
+when I get the chance to test and verify it with a real PLC again.
 
 
 ## Features
@@ -25,12 +30,16 @@ again.
 * Measurement results can be sent via MQTT either using plain text or
   [Protocol Buffers](https://developers.google.com/protocol-buffers/) according to the message
   definition in this repository. Protobuf messages are limited to this format (currently voltage,
-  effective and reactive power of each phase) and extending it requires code changes, while plain
+  effective and reactive power of each phase) and modifying it requires code changes, while plain
   text should work out of the box with any of the predefined measurements.
 * Messages are sent using MQTT 5, taking advantage of the protocol's
   [topic aliases](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901113) to
   reduce bandwidth usage. However, changing the code to MQTT 3.1.1 requires only a few simple
-  changes (see 3d18f386).
+  changes (see 3d18f3867c7d07b8b2eba0a433f0bb42285faaea).
+* This program uses the asynchronous MQTT client from the
+  [Eclipse Paho C library](https://github.com/eclipse/paho.mqtt.c), such that sending of
+  messages is not coupled to the program's main cycle, minimizing the runtime impact of sending
+  messages even under unfavourable network conditions.
 * Furthermore, MQTT messages are staggered across multiple cycles where possible, to prevent spikes
   in bandwidth usage and allow for a more stable run time behaviour. For instance: Reading
   8 measurement values from 10 modules would result in 10 messages after 8/4=2 cycles. Instead of
@@ -53,24 +62,24 @@ This project has mainly been developed for research and has a few limitations:
   determine the process data size and allocate the process images accordingly, no actual data
   besides zeroes will get sent to these modules and no actual data is retrieved from them. The
   absence of erroneous behaviour for these modules cannot be guaranteed.
-* Also, the 750-493 power measurement module is not supported. This module has a hugely different
-  (more complex) way of querying data. The program will correctly detect this and simply ignore
-  these modules.
+* Also, the 750-493 power measurement module is not supported. This module has a different (somewhat
+  more complex) way of querying data. The program will correctly detect this, issue a warning, and
+  simply ignore these modules.
 * Using more than one PM module has not been tested with an actual device, due to lack of
   available hardware. If you try it, any feedback would be appreciated.
 * Error checking is still limited. While all error bits are correctly stored and accessible in the
   process image, most of them are ignored.
 * The program segfaults when compiling with optimization level -O2. This has not been debugged yet.
-  However, -O1 works fine and computations in each cycle usually finish within 5ms, leaving plenty
-  of headroom.
+  However, -O1 works fine and computations in each cycle usually finish in less than 5ms, leaving
+  plenty of headroom.
 
 Most importantly, **this program is not endorsed or supported by WAGO in any way. It has not been
 fully tested and no guarantees can be made regarding its reliability. Do not use it in an
 environment where failure may cause injury, loss of life, or financial damage.**
 
-In a safety-critical environment, replacing the PLC runtime for custom code is rarely a good idea,
-so please consider carefully before using this project. While it had been in productive use
-without issues over several months in a lab environment, your setup and experience may differ.
+In a safety-critical environment, replacing the PLC runtime for custom code may not be a good idea,
+so please consider carefully before using this project. While it had been in productive use without
+issues over several months in a lab environment, your setup and experience may differ.
 
 
 ## Setting Up and Building the Project
@@ -99,11 +108,34 @@ If you like to develop the project, there are some additional steps to be done:
    inspection features to ease development for you.
 
 
+## Resources
+
+This project would not have been possible without the help of various resources:
+* Most importantly, WAGO's [PFC Firmware SDK](https://github.com/WAGO/pfc-firmware-sdk), providing
+  the very base for this project
+* WAGO's [PFC HowTos](https://github.com/WAGO/pfc-howtos), containing many useful programming
+  examples as well as some documentation of the ADI/DAL library functions, with
+  [ADI-MyKBusApplikation](https://github.com/WAGO/pfc-howtos/tree/master/HowTo_ADI-MyKBusApplikation)
+  being the starting point this projects builds upon
+* Documentation on the [PFC100](https://www.wago.com/us/d/9699) and the
+  [PFC200](https://www.wago.com/us/d/6767) controllers, detailing their inner workings and how the
+  process images are built up
+* Documentation on the [750-495](https://www.wago.com/us/d/7054) power measurement module
+  describing its ins and outs, particularly each and every bit/byte in the process image as well as
+  the ID values of the available measurements
+
+
+## License
+
+Contents of this repository are licensed under the [MIT license](LICENSE).
+
+
 ## Alternatives
 
 Need to retrieve energy measurements from your device but don't feel comfortable tampering with
 the runtime, or require stronger safety guarantees?
-These alternatives may work for you:
+These alternatives (parts of which are somewhat representative of my journey towards making this
+project) may work for you:
 * Use WAGO's [Energy Management](https://www.wago.com/global/energy-management). This is the most
   straightforward and officially supported solution.
 * Program your PLC using the WagoAppPowerMeasurement, WagoAppCloud, and optionally WagoAppJSON
