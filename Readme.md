@@ -35,7 +35,7 @@ when I get the chance to test and verify it with a real PLC again.
 * Messages are sent using MQTT 5, taking advantage of the protocol's
   [topic aliases](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901113) to
   reduce bandwidth usage. However, changing the code to MQTT 3.1.1 requires only a few simple
-  changes (see 3d18f3867c7d07b8b2eba0a433f0bb42285faaea).
+  changes (see [3d18f386](https://github.com/p-conrad/iot-energy-meter/commit/3d18f3867c7d07b8b2eba0a433f0bb42285faaea)).
 * This program uses the asynchronous MQTT client from the
   [Eclipse Paho C library](https://github.com/eclipse/paho.mqtt.c), such that sending of
   messages is not coupled to the program's main cycle, minimizing the runtime impact of sending
