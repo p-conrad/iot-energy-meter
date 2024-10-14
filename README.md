@@ -170,7 +170,7 @@ resources:
 ## License
 
 Contents of this repository are licensed under the [MIT
-license](LICENSE).
+license](LICENSE.md).
 
 
 ## Alternatives
